@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String  @id @default(uuid())
+  email       String  @unique
+  userName    String  @unique
+  phoneNumber String  @unique
+  age         Int?
+  location    String?
+
+  listings Listing[] @relation("user-item")
+  bookings Booking[] @relation("owner-item")
+  renter   Booking[] @relation("renter")
+  reviewer Review[]  @relation("reviewer-id")
+  target   Review[]  @relation("target-id")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Listing {
+  id          String        @id @default(uuid())
+  name        String
+  description String
+  price       Decimal
+  status      ListingStatus @default(ACTIVE)
+  type        ListingType   @default(Rent)
+
+  createdBy User   @relation("user-item", fields: [userId], references: [id])
+  userId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Booking {
+  id     String        @id @default(uuid())
+  status BookingStatus
+
+  owner   User   @relation("owner-item", fields: [ownerId], references: [id])
+  ownerId String
+
+  renter   User   @relation("renter", fields: [renterId], references: [id])
+  renterId String
+
+  reviews Review[]
+  payment Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  amount        Decimal
+  status        PaymentStatus
+  paymentMethod String
+
+  booking   Booking @relation(fields: [bookingId], references: [id])
+  bookingId String  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id         String     @id @default(uuid())
+  rating     Int // 1-5 stars
+  title      String?
+  content    String?
+  reviewType ReviewType
+
+  reviewer   User   @relation("reviewer-id", fields: [reviewerId], references: [id])
+  reviewerId String
+
+  target   User?   @relation("target-id", fields: [targetId], references: [id])
+  targetId String?
+
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+  bookingId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ListingStatus {
+  ACTIVE
+  UNAVAILABLE
+  PAUSED
+}
+
+enum ListingType {
+  Rent
+  Borrow
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  ACTIVE
+  RETURNED
+  CANCELLED
+}
+
+enum ReviewType {
+  user
+  item
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+}
