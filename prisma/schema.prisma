@@ -8,12 +8,14 @@ datasource db {
 }
 
 model User {
-  id          String  @id @default(uuid())
-  email       String  @unique
-  userName    String  @unique
-  phoneNumber String  @unique
+  id          String    @id @default(uuid())
+  email       String    @unique
+  userName    String    @unique
+  phoneNumber String    @unique
   age         Int?
   location    String?
+  account     Account[] @relation("user-account")
+  profilePic  String?
 
   listings Listing[] @relation("user-item")
   bookings Booking[] @relation("owner-item")
@@ -25,6 +27,28 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@index([email])
+}
+
+model Account {
+  id                String          @id @default(uuid())
+  image             String
+  provider          AccountProvider
+  providerAccountId String
+
+  user   User   @relation("user-account", fields: [userId], references: [id])
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+enum AccountProvider {
+  google
+  github
+  credentials
 }
 
 model Listing {
@@ -40,6 +64,8 @@ model Listing {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([name])
 }
 
 model Booking {
