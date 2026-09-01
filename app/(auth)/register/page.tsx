@@ -1,48 +1,132 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Image from "next/image";
+import Link from "next/link";
 
 const Register = () => {
   return (
-    <div className="flex flex-col text-white">
-      <div className="flex flex-col p-2 border rounded-sm">
+    <div className="w-full max-w-lg rounded-xl border bg-zinc-950/80 px-6 py-10 text-white shadow-xl backdrop-blur-sm sm:px-10">
+      <div className="flex flex-col gap-8">
         <div className="text-center">
-          <h1> Create Your Account </h1>
-          <p>Join thousands of tool renters today</p>
+          <h1 className="mb-2 text-3xl font-bold sm:text-4xl">
+            Create Your Account
+          </h1>
+          <p className="text-sm text-zinc-400 sm:text-base">
+            Join thousands of tool renters today
+          </p>
         </div>
-        <div>
-          <div>
-            <label> Full Name</label>
-            <input type="text" name="username" id="" placeholder="Kyle Crane" />
+
+        <div className="flex flex-col gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
+          >
+            <Image
+              className="mr-2"
+              src="/google.svg"
+              alt="Google"
+              width={20}
+              height={20}
+            />
+            Continue with Google
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
+          >
+            <Image
+              className="mr-2"
+              src="/github.svg"
+              alt="GitHub"
+              width={20}
+              height={20}
+            />
+            Continue with GitHub
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="h-px flex-1 bg-zinc-800" />
+          <span className="text-xs text-zinc-500">OR</span>
+          <div className="h-px flex-1 bg-zinc-800" />
+        </div>
+
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Kyle Crane"
+              className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
+            />
           </div>
-          <div>
-            <label> email</label>
-            <input
-              type="email"
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
               name="email"
-              id=""
-              placeholder="kyleCrane@gmail.com"
+              type="email"
+              placeholder="kylecrane@gmail.com"
+              className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
             />
           </div>
-          <div>
-            <label> Password </label>
-            <input
-              type="password"
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
               name="password"
-              id=""
-              placeholder="****************"
+              type="password"
+              placeholder="••••••••"
+              className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
             />
           </div>
-          <div>
-            <label> Confirm Password</label>
-            <input type="password" name="" id="" placeholder="************" />
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
+            />
           </div>
         </div>
-        <Button variant={"default"}>Create Account</Button>
-        <p>
-          By creating an account, you agree to our Terms of Service and Privacy
-          Policy
+
+        <Button
+          type="submit"
+          className="h-12 w-full text-base font-semibold shadow-lg cursor-pointer"
+        >
+          Create Account
+        </Button>
+
+        <p className="text-center text-xs leading-5 text-zinc-500">
+          By creating an account, you agree to our{" "}
+          <span className="text-zinc-300 hover:underline">
+            Terms of Service
+          </span>{" "}
+          and{" "}
+          <span className="text-zinc-300 hover:underline">Privacy Policy</span>
+        </p>
+
+        <p className="text-center text-sm text-zinc-400">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="font-medium text-white hover:underline"
+          >
+            Sign in
+          </Link>
         </p>
       </div>
-      <span> Already have an account? Sign in here</span>
     </div>
   );
 };
