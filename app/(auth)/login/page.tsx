@@ -1,10 +1,13 @@
+import { auth, signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
 
-const Login = () => {
+const Login = async () => {
+  const session = await auth();
+  console.log(session);
   return (
     <div className="w-full max-w-lg rounded-xl border bg-zinc-950/80 px-6 py-10 text-white shadow-xl backdrop-blur-sm sm:px-10">
       <div className="flex flex-col gap-8">
@@ -20,6 +23,10 @@ const Login = () => {
         <div className="flex flex-col gap-3">
           <Button
             type="button"
+            onClick={async () => {
+              "use server";
+              await signIn("google");
+            }}
             variant="outline"
             className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
           >
@@ -35,6 +42,10 @@ const Login = () => {
 
           <Button
             type="button"
+            onClick={async () => {
+              "use server";
+              await signIn("github");
+            }}
             variant="outline"
             className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
           >
