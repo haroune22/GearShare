@@ -1,13 +1,24 @@
+import { login } from "@/action/user";
 import { auth, signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-const Login = async () => {
+type SearchPageProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+const Login = async ({ searchParams }: SearchPageProps) => {
+  const error = (await searchParams).error;
+
   const session = await auth();
-  console.log(session);
+  if (session?.user) {
+    redirect("/");
+  }
+
   return (
     <div className="w-full max-w-lg rounded-xl border bg-zinc-950/80 px-6 py-10 text-white shadow-xl backdrop-blur-sm sm:px-10">
       <div className="flex flex-col gap-8">
@@ -66,14 +77,15 @@ const Login = async () => {
           <div className="h-px flex-1 bg-zinc-800" />
         </div>
 
-        <div className="flex flex-col gap-5">
+        <form action={login} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="kylecrane@gmail.com"
+              placeholder="kyleCrane@gmail.com"
+              required
               className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
             />
           </div>
@@ -85,32 +97,37 @@ const Login = async () => {
               name="password"
               type="password"
               placeholder="••••••••"
+              required
               className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
             />
           </div>
-        </div>
-
-        <Button
-          type="submit"
-          className="h-12 w-full text-base font-semibold shadow-lg"
-        >
-          Login
-        </Button>
+          <Button
+            type="submit"
+            className="h-12 w-full text-base font-semibold shadow-lg"
+          >
+            Login
+          </Button>
+          {error && (
+            <p className="text-center text-red-500">
+              Invalid email or password
+            </p>
+          )}
+        </form>
 
         <p className="text-center text-xs leading-5 text-zinc-500">
           By continuing, you agree to our{" "}
-          <span className="text-zinc-300 hover:underline">
+          <span className="text-blue-600 hover:underline">
             Terms of Service
           </span>{" "}
           and{" "}
-          <span className="text-zinc-300 hover:underline">Privacy Policy</span>
+          <span className="text-blue-600 hover:underline">Privacy Policy</span>
         </p>
 
         <p className="text-center text-sm text-zinc-400">
           Already have an account?{" "}
           <Link
             href="/register"
-            className="font-medium text-white hover:underline"
+            className="font-medium text-blue-600 hover:underline"
           >
             Sign up
           </Link>

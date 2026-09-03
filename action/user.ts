@@ -2,26 +2,31 @@
 
 import { signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { signInSchema } from "@/lib/zod";
 import { hash } from "bcryptjs";
-import { AuthError, CredentialsSignin } from "next-auth";
+import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 
 const login = async (formData: FormData) => {
   const email = formData.get("email");
-  const password = formData.get("password");
+  const password = formData?.get("password");
+
+  const validateSchema = signInSchema.safeParse({ email, password });
+
+  if (!validateSchema.success) {
+    throw new Error("all inputs required");
+  }
 
   try {
     await signIn("credentials", {
       email,
       password,
-      redirect: false,
+      redirect: true,
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: error.type };
+      redirect(`/login?error=${error.type}`);
     }
-    return { error: "Something went wrong" };
-    console.log(error);
   }
   redirect("/");
 };

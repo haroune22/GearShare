@@ -1,10 +1,25 @@
+import { register } from "@/action/user";
+import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-const Register = () => {
+type RegisterProps = {
+  searchParams: Promise<{
+    [key: string]: string | string[] | undefined;
+  }>;
+};
+
+const Register = async ({ searchParams }: RegisterProps) => {
+  const error = (await searchParams).error;
+
+  const session = await auth();
+  if (session?.user) {
+    redirect("/");
+  }
   return (
     <div className="w-full max-w-lg rounded-xl border bg-zinc-950/80 px-6 py-10 text-white shadow-xl backdrop-blur-sm sm:px-10">
       <div className="flex flex-col gap-8">
@@ -16,7 +31,6 @@ const Register = () => {
             Join thousands of tool renters today
           </p>
         </div>
-
         <div className="flex flex-col gap-3">
           <Button
             type="button"
@@ -32,7 +46,6 @@ const Register = () => {
             />
             Continue with Google
           </Button>
-
           <Button
             type="button"
             variant="outline"
@@ -48,14 +61,12 @@ const Register = () => {
             Continue with GitHub
           </Button>
         </div>
-
         <div className="flex items-center gap-4">
           <div className="h-px flex-1 bg-zinc-800" />
           <span className="text-xs text-zinc-500">OR</span>
           <div className="h-px flex-1 bg-zinc-800" />
         </div>
-
-        <div className="flex flex-col gap-5">
+        <form action={register} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Label htmlFor="username">Username</Label>
             <Input
@@ -63,7 +74,8 @@ const Register = () => {
               name="username"
               type="text"
               placeholder="Kyle Crane"
-              className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
+              className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
+              required
             />
           </div>
 
@@ -73,8 +85,9 @@ const Register = () => {
               id="email"
               name="email"
               type="email"
+              className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
               placeholder="kylecrane@gmail.com"
-              className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
+              required
             />
           </div>
 
@@ -85,40 +98,31 @@ const Register = () => {
               name="password"
               type="password"
               placeholder="••••••••"
-              className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
+              className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
+              required
             />
           </div>
+          <Button type="submit" size={"lg"}>
+            Create Account
+          </Button>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              className="h-12 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500"
-            />
-          </div>
-        </div>
-
-        <Button
-          type="submit"
-          className="h-12 w-full text-base font-semibold shadow-lg cursor-pointer"
-        >
-          Create Account
-        </Button>
+          {error === "user_exists" && (
+            <p className="text-center text-sm text-red-400">
+              An account with this email already exists.
+            </p>
+          )}
+        </form>
 
         <p className="text-center text-xs leading-5 text-zinc-500">
-          By creating an account, you agree to our{" "}
+          By creating an account, you agree to our
           <span className="text-zinc-300 hover:underline">
             Terms of Service
-          </span>{" "}
-          and{" "}
+          </span>
+          and
           <span className="text-zinc-300 hover:underline">Privacy Policy</span>
         </p>
-
         <p className="text-center text-sm text-zinc-400">
-          Already have an account?{" "}
+          Already have an account?
           <Link
             href="/login"
             className="font-medium text-white hover:underline"
