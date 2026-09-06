@@ -6,20 +6,30 @@ import Google from "next-auth/providers/google";
 import { prisma } from "./lib/prisma";
 import { compare } from "bcryptjs";
 import { signInSchema } from "./lib/zod";
-import { fi } from "zod/v4/locales";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import "next-auth/jwt";
 
 declare module "next-auth" {
   interface User {
     profilePic?: string | null;
+    userName: string;
   }
   interface Session {
     user: {
       profilePic?: string | null;
+      userName: string;
     } & DefaultSession["user"];
+  }
+}
+declare module "next-auth/jwt" {
+  interface JWT {
+    userName: string;
+    profilePic?: string | null;
   }
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
     Github({
       clientId: process.env.GITHUB_CLIENT_ID,
@@ -51,11 +61,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
         });
 
-        if (!user) {
+        if (!user || !user.password) {
           throw new Error("invalid email or password");
         }
 
-        const isMatched = await compare(password, user.password);
+        const isMatched = await compare(password, user?.password);
 
         if (!isMatched) {
           throw new Error("password did not match");
@@ -71,71 +81,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async session({ session, token }) {
-      if (token?.sub && token?.profilePic) {
+      if (token.sub && token.profilePic && token.userName) {
         session.user.id = token.sub;
-        session.user.profilePic = token.profilePic as string;
+        session.user.profilePic = token.profilePic;
+        session.user.userName = token.userName;
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.profilePic = user.profilePic;
+        token.userName = user.userName;
       }
       return token;
-    },
-    signIn: async ({ user, account }) => {
-      if (account?.provider === "google") {
-        try {
-          const { email, name, image, id } = user;
-
-          if (!email || !name || !image || !id) {
-            throw new Error("invalid google account");
-          }
-
-          const existingUser = await prisma.user.findFirst({
-            where: {
-              email,
-            },
-          });
-
-          if (!existingUser) {
-            const user = await prisma.user.create({
-              data: {
-                email,
-                password: "",
-                userName: name,
-                profilePic: image,
-              },
-            });
-          } else {
-            const userAccount = await prisma.account.findFirst({
-              where: {
-                userId: existingUser.id,
-              },
-            });
-            if (!userAccount) {
-              await prisma.account.create({
-                data: {
-                  provider: "google",
-                  image: image,
-                  providerAccountId: id,
-                  userId: existingUser.id,
-                },
-              });
-            } else {
-              return true;
-            }
-          }
-        } catch (error) {
-          throw new Error("Error while creating user");
-        }
-      }
-
-      if (account?.provider === "credentials") {
-        return true;
-      } else {
-        return false;
-      }
     },
   },
 });
