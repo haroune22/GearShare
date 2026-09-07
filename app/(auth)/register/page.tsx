@@ -1,5 +1,5 @@
 import { register } from "@/action/user";
-import { auth } from "@/auth";
+import { auth, signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ const Register = async ({ searchParams }: RegisterProps) => {
   const error = (await searchParams).error;
 
   const session = await auth();
+  console.log(session?.user);
   if (session?.user) {
     redirect("/");
   }
@@ -35,6 +36,10 @@ const Register = async ({ searchParams }: RegisterProps) => {
           <Button
             type="button"
             variant="outline"
+            onClick={async () => {
+              "use server";
+              await signIn("google");
+            }}
             className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
           >
             <Image
@@ -49,6 +54,10 @@ const Register = async ({ searchParams }: RegisterProps) => {
           <Button
             type="button"
             variant="outline"
+            onClick={async () => {
+              "use server";
+              await signIn("github");
+            }}
             className="h-12 w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white"
           >
             <Image

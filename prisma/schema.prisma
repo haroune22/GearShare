@@ -8,15 +8,17 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(uuid())
-  email       String    @unique
-  userName    String
-  password    String?
-  phoneNumber String?   @unique
-  age         Int?
-  location    String?
-  account     Account[] @relation("user-account")
-  profilePic  String?
+  id            String    @id @default(uuid())
+  email         String    @unique
+  userName      String?
+  emailVerified DateTime?
+  name          String?
+  password      String?
+  phoneNumber   String?   @unique
+  age           Int?
+  location      String?
+  account       Account[] @relation("user-account")
+  image         String?
 
   listings Listing[] @relation("user-item")
   bookings Booking[] @relation("owner-item")

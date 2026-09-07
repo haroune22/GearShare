@@ -15,6 +15,7 @@ const Login = async ({ searchParams }: SearchPageProps) => {
   const error = (await searchParams).error;
 
   const session = await auth();
+  console.log(session?.user);
   if (session?.user) {
     redirect("/");
   }

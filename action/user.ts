@@ -21,10 +21,12 @@ const login = async (formData: FormData) => {
     await signIn("credentials", {
       email,
       password,
-      redirect: true,
+      callbackUrl: "/",
+      redirect: false,
     });
   } catch (error) {
     if (error instanceof AuthError) {
+      console.log(error);
       redirect(`/login?error=${error.type}`);
     }
   }

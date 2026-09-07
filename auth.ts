@@ -11,25 +11,28 @@ import "next-auth/jwt";
 
 declare module "next-auth" {
   interface User {
-    profilePic?: string | null;
-    userName: string;
+    image?: string | null;
+    userName?: string | null;
   }
   interface Session {
     user: {
-      profilePic?: string | null;
-      userName: string;
+      image?: string | null;
+      userName?: string | null;
     } & DefaultSession["user"];
   }
 }
 declare module "next-auth/jwt" {
   interface JWT {
-    userName: string;
-    profilePic?: string | null;
+    userName?: string | null;
+    image?: string | null;
   }
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     Github({
       clientId: process.env.GITHUB_CLIENT_ID,
@@ -70,6 +73,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!isMatched) {
           throw new Error("password did not match");
         }
+
         const { password: _, ...userData } = user;
 
         return userData;
@@ -81,16 +85,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async session({ session, token }) {
-      if (token.sub && token.profilePic && token.userName) {
+      console.log("SESSION CALLBACK", { session, token });
+
+      if (token.sub) {
         session.user.id = token.sub;
-        session.user.profilePic = token.profilePic;
+      }
+
+      if (token.userName) {
         session.user.userName = token.userName;
       }
+
+      session.user.image = token.image;
+
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
-        token.profilePic = user.profilePic;
+        token.image = user.image;
         token.userName = user.userName;
       }
       return token;
