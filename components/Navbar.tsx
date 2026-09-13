@@ -16,11 +16,11 @@ const Navbar = async () => {
           src="/logo.png"
           alt="logo"
           className="rounded-lg object-cover"
-          width={250}
+          width={230}
           height={150}
         />
       </div>
-      <div className="flex items-center justify-center gap-6">
+      <div className="hidden md:flex items-center justify-center gap-6">
         <NavLinks className="flex items-center justify-center gap-6" />
       </div>
       <div className="flex items-center gap-4">
@@ -39,6 +39,7 @@ const Navbar = async () => {
         )}
         {session?.user ? (
           <Button
+            className="py-6 px-5 flex items-center justify-center"
             onClick={async () => {
               "use server";
               await signOut();
