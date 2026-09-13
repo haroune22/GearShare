@@ -85,10 +85,25 @@ model Listing {
   createdBy User   @relation("user-item", fields: [userId], references: [id])
   userId    String
 
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([name])
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  slug     String    @unique
+  listings Listing[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
 }
 
 model Booking {
