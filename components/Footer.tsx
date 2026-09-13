@@ -4,15 +4,15 @@ import { NavLinks } from "./NavLinks";
 
 const Footer = () => {
   return (
-    <footer className="w-full border-t border-fuchsia-300/30 bg-zinc-950 px-8 py-10">
+    <footer className="w-full mx-auto border-t border-fuchsia-300/30 bg-zinc-950 px-2 py-10">
       <div className="mx-auto flex max-w-7xl items-start justify-between gap-12">
         <div className="flex flex-1 flex-col gap-2">
           <Image
             src="/logo.png"
             alt="GearShare"
-            width={300}
-            height={150}
-            className="h-20 object-cover"
+            width={350}
+            height={100}
+            className="h-16 object-cover"
           />
 
           <p className="max-w-sm text-sm leading-6 text-gray-400">

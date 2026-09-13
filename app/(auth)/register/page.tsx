@@ -17,7 +17,7 @@ const Register = async ({ searchParams }: RegisterProps) => {
   const error = (await searchParams).error;
 
   const session = await auth();
-  console.log(session?.user);
+  // console.log(session?.user);
   if (session?.user) {
     redirect("/");
   }
