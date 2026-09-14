@@ -19,6 +19,7 @@ import {
 const Categories = async () => {
   const categoryData = await getCategory();
   console.log(categoryData);
+
   const categoryIcons = {
     "power-tools": Drill,
     "hand-tools": Hammer,
@@ -33,6 +34,7 @@ const Categories = async () => {
     "construction-equipment": HardHat,
     "moving-transport": Truck,
   };
+
   return (
     <section className="flex flex-col max-w-[80vw] py-10 items-center justify-center mt-4">
       <div className="flex w-full items-center justify-between px-10">

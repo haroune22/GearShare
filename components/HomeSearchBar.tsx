@@ -2,7 +2,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Search } from "lucide-react";
 
-const SearchBar = () => {
+const HomeSearchBar = () => {
   return (
     <>
       <Search className="h-12 w-12 absolute left-3 top-3.5" />
@@ -17,4 +17,4 @@ const SearchBar = () => {
   );
 };
 
-export default SearchBar;
+export default HomeSearchBar;

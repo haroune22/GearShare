@@ -1,5 +1,4 @@
-import React from "react";
-import SearchBar from "./SearchBar";
+import HomeSearchBar from "./HomeSearchBar";
 
 const Hero = () => {
   return (
@@ -17,7 +16,7 @@ const Hero = () => {
         </p>
       </div>
       <div className="flex relative mt-8 max-w-lg md:max-w-xl w-full">
-        <SearchBar />
+        <HomeSearchBar />
       </div>
     </div>
   );
