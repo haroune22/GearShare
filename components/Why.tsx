@@ -1,5 +1,4 @@
 import { ShieldCheck, Wallet, Wrench } from "lucide-react";
-
 const Why = () => {
   const data = [
     {
@@ -19,21 +18,18 @@ const Why = () => {
       icon: ShieldCheck,
     },
   ];
-
   return (
-    <section className="mx-auto flex w-full max-w-7xl flex-col px-6 py-16">
+    <section className="w-full py-16">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-3xl font-bold text-white md:text-4xl">
           Why <span className="text-[#9852f2]">GearShare?</span>
         </h2>
-
         <p className="mt-4 text-base leading-7 text-zinc-400 md:text-lg">
           Get the tools you need without buying equipment you&apos;ll only use
           once.
         </p>
       </div>
-
-      <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+      <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
         {data.map((item) => {
           const Icon = item.icon;
           return (
@@ -44,11 +40,9 @@ const Why = () => {
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#9852f2]/10 text-[#9852f2] transition-all duration-300 group-hover:scale-110 group-hover:bg-[#9852f2]/20">
                 <Icon className="h-7 w-7" strokeWidth={1.8} />
               </div>
-
               <h3 className="mt-5 text-lg font-semibold text-white">
                 {item.label}
               </h3>
-
               <p className="mt-2 max-w-xs text-sm leading-6 text-zinc-400">
                 {item.description}
               </p>
@@ -59,5 +53,4 @@ const Why = () => {
     </section>
   );
 };
-
 export default Why;

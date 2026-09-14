@@ -36,7 +36,7 @@ const Categories = async () => {
   };
 
   return (
-    <section className="flex flex-col max-w-[80vw] py-10 items-center justify-center mt-4">
+    <section className="flex flex-col max-w-[80vw] items-center justify-center mt-4">
       <div className="flex w-full items-center justify-between px-10">
         <h1 className="text-2xl md:text-4xl text-white font-bold">
           Browse by <span className="text-[#9852f2]">Category</span>

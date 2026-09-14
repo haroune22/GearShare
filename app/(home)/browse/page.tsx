@@ -1,4 +1,5 @@
 import { getCategory } from "@/action/category";
+import Listings from "@/components/Listings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -69,8 +70,7 @@ const Browse = async () => {
           </Button>
         </div>
       </div>
-
-      <div>cards</div>
+      <Listings />
     </main>
   );
 };

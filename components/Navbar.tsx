@@ -5,13 +5,17 @@ import { NavLinks } from "./NavLinks";
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 const Navbar = async () => {
   const session = await auth();
 
   return (
     <div className="w-full flex items-center px-8 justify-between h-20 border-b border-fuchsia-300/30 ">
-      <div className="transition-transform cursor-pointer duration-300 hover:scale-110">
+      <Link
+        href={"/"}
+        className="transition-transform cursor-pointer duration-300 hover:scale-110"
+      >
         <Image
           src="/logo.png"
           alt="logo"
@@ -19,7 +23,7 @@ const Navbar = async () => {
           width={230}
           height={150}
         />
-      </div>
+      </Link>
       <div className="hidden md:flex items-center justify-center gap-6">
         <NavLinks className="flex items-center justify-center gap-6" />
       </div>

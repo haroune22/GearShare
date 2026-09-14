@@ -78,7 +78,7 @@ model Listing {
   id          String        @id @default(uuid())
   name        String
   description String
-  price       Decimal
+  price       Decimal       @db.Decimal(10, 2)
   status      ListingStatus @default(ACTIVE)
   type        ListingType   @default(Rent)
 
