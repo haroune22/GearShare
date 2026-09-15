@@ -1,12 +1,17 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 
-export const getListings = async (
-  categorySlug?: string,
-  name?: string,
-  take: number = 10,
-  skip: number = 0,
-) => {
+export const getListings = async ({
+  categorySlug,
+  name,
+  take = 10,
+  skip = 0,
+}: {
+  categorySlug?: string;
+  name?: string;
+  take?: number;
+  skip?: number;
+}) => {
   try {
     const listings = await prisma.listing.findMany({
       where: {

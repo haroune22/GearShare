@@ -18,7 +18,7 @@ import {
 
 const Categories = async () => {
   const categoryData = await getCategory();
-  console.log(categoryData);
+  // console.log(categoryData);
 
   const categoryIcons = {
     "power-tools": Drill,

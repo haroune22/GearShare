@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { Prisma } from "./generated/prisma/client";
 
 export const signInSchema = z.object({
   email: z
@@ -28,3 +29,16 @@ export const signUpSchema = z.object({
 
 export type signInData = z.infer<typeof signInSchema>;
 export type signUpData = z.infer<typeof signUpSchema>;
+
+export type ListingWithOwner = Prisma.ListingGetPayload<{
+  include: {
+    createdBy: {
+      select: {
+        id: true;
+        userName: true;
+        name: true;
+        image: true;
+      };
+    };
+  };
+}>;

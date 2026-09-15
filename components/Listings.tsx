@@ -1,11 +1,15 @@
-import { getListings } from "@/action/listings";
 import { ArrowUpRight, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
-const Listings = async () => {
-  const listings = await getListings();
+import { ListingWithOwner } from "@/lib/zod";
+
+const Listings = async ({
+  listings,
+}: {
+  listings: ListingWithOwner[] | undefined;
+}) => {
   return (
     <div className="mt-8 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {listings?.map((listing) => {
@@ -16,7 +20,7 @@ const Listings = async () => {
             className="group w-full overflow-hidden border-zinc-800 bg-zinc-900/70 py-0 transition-all duration-300 hover:-translate-y-1 hover:border-[#9852f2]/50 hover:shadow-lg hover:shadow-[#9852f2]/10"
           >
             <Link href={`/listing/${listing.id}`}>
-              <div className="relative flex h-52 items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-900 to-[#9852f2]/20">
+              <div className="relative flex h-52 items-center justify-center overflow-hidden bg-linear-to-br from-zinc-800 via-zinc-900 to-[#9852f2]/20">
                 <span className="text-6xl font-bold text-zinc-700 transition-transform duration-500 group-hover:scale-110">
                   {listing.name.charAt(0)}
                 </span>

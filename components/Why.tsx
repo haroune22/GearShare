@@ -1,4 +1,5 @@
 import { ShieldCheck, Wallet, Wrench } from "lucide-react";
+
 const Why = () => {
   const data = [
     {
@@ -18,6 +19,7 @@ const Why = () => {
       icon: ShieldCheck,
     },
   ];
+
   return (
     <section className="w-full py-16">
       <div className="mx-auto max-w-2xl text-center">

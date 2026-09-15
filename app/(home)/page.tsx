@@ -1,3 +1,4 @@
+import { getListings } from "@/action/listings";
 import Categories from "@/components/Categories";
 import Hero from "@/components/Hero";
 import Listings from "@/components/Listings";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ListCheck } from "lucide-react";
 
 export default async function Home() {
+  const listings = await getListings({});
   return (
     <main className="flex w-full flex-col items-center">
       <Hero />
@@ -25,7 +27,7 @@ export default async function Home() {
               <ListCheck className="mr-2 h-5 w-5" /> Create Listing
             </Button>
           </div>
-          <Listings />
+          <Listings listings={listings} />
         </section>
         <Why />
       </div>
