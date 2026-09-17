@@ -1,5 +1,9 @@
 "use client";
+
 import { Search, SlidersHorizontal } from "lucide-react";
+import { Category } from "@/lib/generated/prisma/client";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 import { Input } from "./ui/input";
 import {
   Select,
@@ -9,10 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Category } from "@/lib/generated/prisma/client";
 import { Button } from "./ui/button";
-import { useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const ListingsFilters = ({ categories }: { categories: Category[] }) => {
   const router = useRouter();
@@ -57,6 +58,12 @@ const ListingsFilters = ({ categories }: { categories: Category[] }) => {
               alignItemWithTrigger={false}
               className="border-zinc-800 bg-zinc-900 text-white"
             >
+              <SelectItem
+                value=""
+                className="cursor-pointer py-3  hover:text-white focus:text-white"
+              >
+                Remove Category
+              </SelectItem>
               <SelectGroup>
                 {categories.map((category) => (
                   <SelectItem
