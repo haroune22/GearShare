@@ -30,11 +30,7 @@ const Navbar = async () => {
       <div className="flex items-center gap-4">
         {session?.user && (
           <Avatar>
-            <AvatarImage
-              src={session?.user?.image || ""}
-              alt="avatar"
-              className="grayscale"
-            />
+            <AvatarImage src={session?.user?.image || ""} alt="avatar" />
             <AvatarFallback>
               {session?.user.name?.charAt(0).toUpperCase()}
             </AvatarFallback>
