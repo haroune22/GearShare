@@ -12,7 +12,7 @@ const Hero = () => {
         </span>
         <p className="mt-4 max-w-xl text-lg font-medium leading-7 text-zinc-500 md:text-xl">
           GearShare is the peer-to-peer marketplace for tools and equipment.
-          Browse what&apos;s available near you — then grab the app to rent it.
+          Browse what&apos;s available near you, then grab the app to rent it.
         </p>
       </div>
       <div className="mt-8 relative flex w-full max-w-xl">
