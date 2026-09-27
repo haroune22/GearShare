@@ -58,6 +58,7 @@ export const getListingById = async (id: string) => {
         status: true,
         type: true,
         category: true,
+        images: true,
         booking: {
           select: {
             id: true,

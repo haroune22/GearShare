@@ -16,7 +16,7 @@ model User {
   password      String?
   phoneNumber   String?   @unique
   age           Int?
-  location      String?
+  address       String?
   account       Account[] @relation("user-account")
   image         String?
 
@@ -82,7 +82,9 @@ model Listing {
   status      ListingStatus @default(ACTIVE)
   type        ListingType   @default(Rent)
 
-  booking Booking[]
+  images   String[]         @default([])
+  booking  Booking[]
+  location ListingLocation?
 
   createdBy User   @relation("user-item", fields: [userId], references: [id])
   userId    String
@@ -94,6 +96,17 @@ model Listing {
   updatedAt DateTime @updatedAt
 
   @@index([name])
+}
+
+model ListingLocation {
+  id String @id @default(uuid())
+
+  address   String
+  latitude  Decimal @db.Decimal(10, 7)
+  longitude Decimal @db.Decimal(10, 7)
+
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String  @unique
 }
 
 model Category {
