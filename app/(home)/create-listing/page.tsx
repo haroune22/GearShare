@@ -20,16 +20,12 @@ const formSchema = z.object({
     .string()
     .min(3, "Item name must be at least 3 characters.")
     .max(50, "Item name must be at most 50 characters."),
-
   description: z
     .string()
     .min(20, "Description must be at least 20 characters.")
     .max(500, "Description must be at most 500 characters."),
-
   price: z.number().min(0, "Price cannot be negative."),
-
   type: z.enum(["Rent", "Borrow"]),
-
   category: z.string().min(1, "Please select a category."),
 });
 
