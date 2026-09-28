@@ -105,13 +105,11 @@ export default async function Listing({
 
           <div className="mt-8">
             <h2 className="mb-3 text-lg font-semibold">About this item</h2>
-
             <p className="leading-7 text-zinc-400">{listing.description}</p>
           </div>
 
           <div className="mt-8 flex items-start gap-3 border-t border-zinc-800 pt-6">
             <MapPin size={20} className="mt-0.5 text-fuchsia-400" />
-
             <div>
               <p className="font-medium">Pickup location</p>
               <p className="mt-1 text-sm text-zinc-500">
@@ -133,7 +131,6 @@ export default async function Listing({
 
       <section className="mt-16 border-t border-zinc-800 pt-10">
         <h2 className="mb-6 text-xl font-semibold">Listed by</h2>
-
         <div className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
           <div className="flex items-center gap-4">
             {listing.createdBy.image ? (
@@ -149,7 +146,6 @@ export default async function Listing({
                 <User size={24} className="text-zinc-500" />
               </div>
             )}
-
             <div>
               <p className="font-semibold">
                 {listing.createdBy.name ?? "Unknown owner"}
@@ -162,7 +158,6 @@ export default async function Listing({
               </div>
             </div>
           </div>
-
           <ShieldCheck size={22} className="text-emerald-400" />
         </div>
       </section>
