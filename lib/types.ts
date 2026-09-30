@@ -1,0 +1,9 @@
+export type ListingFormData = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  type: "Rent" | "Borrow";
+  categoryId: string;
+  images: string[];
+};
