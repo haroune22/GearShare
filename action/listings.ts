@@ -1,5 +1,7 @@
 "use server";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { createListingData } from "@/lib/types";
 
 export const getListings = async ({
   categorySlug,
@@ -95,6 +97,31 @@ export const getListingById = async (id: string) => {
       },
     });
     return listing;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const createListing = async (
+  data: createListingData,
+  images: string[],
+) => {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+  try {
+    const newListing = await prisma.listing.create({
+      data: {
+        ...data,
+        images,
+        userId: session?.user.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+    return newListing;
   } catch (error) {
     console.log(error);
   }

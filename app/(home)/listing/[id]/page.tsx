@@ -8,6 +8,7 @@ import {
   Star,
   User,
 } from "lucide-react";
+import ImageGallery from "@/components/ImageGallery";
 
 export default async function Listing({
   params,
@@ -25,8 +26,6 @@ export default async function Listing({
     );
   }
 
-  const hasImages = listing.images && listing.images.length > 0;
-
   return (
     <main className="min-h-screen w-full px-6 py-10 text-white md:px-12 lg:px-20">
       <div className="mb-8 flex items-center gap-2 text-sm text-zinc-500">
@@ -39,35 +38,7 @@ export default async function Listing({
 
       <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr]">
         <section>
-          <div className="relative aspect-4/3 w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
-            {hasImages ? (
-              <Image
-                src={listing.images[0]}
-                alt={listing.name}
-                fill
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-fuchsia-950 via-zinc-900 to-zinc-950">
-                <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/10">
-                    <span className="text-3xl">🔧</span>
-                  </div>
-                  <p className="text-sm text-zinc-500">No images available</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4 flex gap-3">
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="h-20 w-24 overflow-hidden rounded-lg border border-zinc-800 bg-linear-to-br from-zinc-800 to-zinc-900"
-              />
-            ))}
-          </div>
+          <ImageGallery images={listing.images} name={listing.name} />
         </section>
 
         <section className="flex flex-col">
@@ -97,7 +68,7 @@ export default async function Listing({
             <p className="text-sm text-zinc-500">Rental price</p>
             <div className="mt-1 flex items-end gap-2">
               <span className="text-3xl font-bold">
-                $${listing.price.toString()}
+                ${listing.price.toString()}
               </span>
               <span className="mb-1 text-sm text-zinc-500">/ week</span>
             </div>

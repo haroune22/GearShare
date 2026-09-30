@@ -54,6 +54,5 @@ export const formSchema = z.object({
     .max(500, "Description must be at most 500 characters."),
   price: z.number().min(0, "Price cannot be negative."),
   type: z.enum(["Rent", "Borrow"]),
-  category: z.string().min(1, "Please select a category."),
-  images: z.array,
+  categoryId: z.string().min(1, "Please select a category."),
 });

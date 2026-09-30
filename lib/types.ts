@@ -7,3 +7,11 @@ export type ListingFormData = {
   categoryId: string;
   images: string[];
 };
+
+export type createListingData = {
+  name: string;
+  description: string;
+  price: number;
+  type: "Rent" | "Borrow";
+  categoryId: string;
+};

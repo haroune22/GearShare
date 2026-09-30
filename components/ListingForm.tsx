@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import {
   Field,
@@ -18,6 +19,9 @@ import z from "zod";
 import { ListingFormData } from "@/lib/types";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { useUploadThing } from "@/lib/utils";
+import { createListing } from "@/action/listings";
+import { useRouter } from "next/navigation";
 
 type ListingFormProps = {
   mode: "create" | "edit";
@@ -30,16 +34,20 @@ export default function ListingForm({
   mode,
   listing,
 }: ListingFormProps) {
+  const router = useRouter();
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+
   const [imagePreviews, setImagePreviews] = useState<string[]>(
     listing?.images ?? [],
   );
+  const { startUpload } = useUploadThing("imageUploader");
 
   const defaultValues = {
     name: listing?.name ?? "",
     description: listing?.description ?? "",
-    price: listing ? Number(listing.price) : 0,
+    price: listing?.price ? Number(listing.price) : 0,
     type: listing?.type ?? "Rent",
-    category: listing?.categoryId ?? "",
+    categoryId: listing?.categoryId ?? "",
     images: listing?.images ?? [],
   };
 
@@ -53,23 +61,54 @@ export default function ListingForm({
     name: "type",
   });
 
-  const onSubmit = (data: z.output<typeof formSchema>) => {
-    console.log(data);
-  };
-  const handleImageChange = (
-    e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>,
-  ) => {
-    e.preventDefault();
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && imagePreviews.length < 5) {
-      const imageFIle = URL.createObjectURL(file);
-      setImagePreviews((previous) => [...previous, imageFIle]);
-    }
+
+    if (!file || imageFiles.length >= 5) return;
+
+    const previewUrl = URL.createObjectURL(file);
+
+    setImageFiles((previous) => [...previous, file]);
+    setImagePreviews((previous) => [...previous, previewUrl]);
+
+    e.target.value = "";
   };
 
   const handleRemoveImage = (index: number) => {
+    const preview = imagePreviews[index];
+
+    if (preview?.startsWith("blob:")) {
+      URL.revokeObjectURL(preview);
+    }
+
+    setImageFiles((previous) => previous.filter((_, i) => i !== index));
     setImagePreviews((previous) => previous.filter((_, i) => i !== index));
   };
+
+  const onSubmit = async (data: z.output<typeof formSchema>) => {
+    console.log(data);
+    console.log("FILES:", imageFiles);
+    if (mode === "create") {
+      let imageUrls: string[] = [];
+
+      if (imageFiles.length > 0) {
+        const uploadedFiles = await startUpload(imageFiles);
+
+        if (!uploadedFiles) {
+          throw new Error("Image upload failed");
+        }
+
+        imageUrls = uploadedFiles.map((file) => file.ufsUrl);
+      }
+
+      const newListing = await createListing(data, imageUrls);
+
+      if (newListing) {
+        router.push(`/listing/${newListing.id}`);
+      }
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl">
       <form id="create-form" onSubmit={form.handleSubmit(onSubmit)}>
@@ -159,8 +198,9 @@ export default function ListingForm({
                   step="0.01"
                   className="max-w-30"
                   value={field.value}
-                  onChange={(event) => {
-                    field.onChange(event.target.valueAsNumber);
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(value === "" ? undefined : Number(value));
                   }}
                   aria-invalid={fieldState.invalid}
                   placeholder="30"
@@ -174,7 +214,7 @@ export default function ListingForm({
           />
 
           <Controller
-            name="category"
+            name="categoryId"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
@@ -197,38 +237,44 @@ export default function ListingForm({
               </Field>
             )}
           />
-          <Controller
-            name="images"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-form-images">Images</FieldLabel>
-                <Input
-                  id="create-form-images"
-                  type="file"
-                  onChange={handleImageChange}
-                />
-                <FieldDescription>
-                  Upload up to 5 images of your item.
-                </FieldDescription>
+          <Field>
+            <FieldLabel htmlFor="create-form-images">Images</FieldLabel>
 
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
+            <Input
+              id="create-form-images"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              disabled={imageFiles.length >= 5}
+            />
+
+            <FieldDescription>
+              Add up to 5 images of your item. You can remove them before
+              creating the listing.
+            </FieldDescription>
+          </Field>
+
           {imagePreviews.length > 0 && (
-            <div className="flex gap-4 flex-wrap max-w-2xl">
-              {imagePreviews.map((i, index) => (
-                <div className="relative" key={i}>
-                  <Image src={i} alt={i} width={300} height={300} />
+            <div className="flex max-w-2xl flex-wrap gap-4">
+              {imagePreviews.map((image, index) => (
+                <div
+                  className="relative overflow-hidden rounded-lg"
+                  key={image}
+                >
+                  <Image
+                    src={image}
+                    alt={`Listing image ${index + 1}`}
+                    width={200}
+                    height={200}
+                    className="h-48 w-48 object-cover"
+                  />
+
                   <Button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
-                    className="absolute right-2 top-2 h-7 w-7 rounded-full"
+                    className="absolute right-2 top-2 h-7 w-7 rounded-full p-0"
                   >
-                    <X />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
