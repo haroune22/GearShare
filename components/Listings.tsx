@@ -21,12 +21,23 @@ const Listings = async ({
           >
             <Link href={`/listing/${listing.id}`}>
               <div className="relative flex h-52 items-center justify-center overflow-hidden bg-linear-to-br from-zinc-800 via-zinc-900 to-[#9852f2]/20">
-                <span className="text-6xl font-bold text-zinc-700 transition-transform duration-500 group-hover:scale-110">
-                  {listing.name.charAt(0)}
-                </span>
+                {listing.images.length > 0 ? (
+                  <Image
+                    src={listing.images[0]}
+                    alt={listing.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <span className="text-6xl font-bold text-zinc-700 transition-transform duration-500 group-hover:scale-110">
+                    {listing.name.charAt(0)}
+                  </span>
+                )}
+
                 <span className="absolute right-3 top-3 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-400 backdrop-blur-sm">
                   {listing.status}
                 </span>
+
                 <span className="absolute left-3 top-3 rounded-full bg-black/40 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
                   {listing.type}
                 </span>

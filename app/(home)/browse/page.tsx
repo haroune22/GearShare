@@ -5,6 +5,7 @@ import ListingsFilters from "@/components/ListingsFilters";
 import ListingsPagination from "@/components/ListingsPagination";
 import { Button } from "@/components/ui/button";
 import { ListCheck } from "lucide-react";
+import Link from "next/link";
 
 type SearchParams = Promise<{ category: string; name: string; page: number }>;
 
@@ -24,10 +25,13 @@ const Browse = async ({ searchParams }: { searchParams: SearchParams }) => {
             Find the right tools for your next job.
           </p>
         </div>
-        <Button className="w-fit cursor-pointer bg-[#9852f2] px-6 py-6 text-base font-bold transition-colors hover:bg-[#9852f2]/80">
+        <Link
+          href="/listing/new"
+          className="w-fit flex rounded-lg cursor-pointer bg-[#9852f2] px-6 py-5 text-base font-bold transition-colors hover:bg-[#9852f2]/80"
+        >
           <ListCheck className="mr-2 h-5 w-5" />
           Create Listing
-        </Button>
+        </Link>
       </div>
       <ListingsFilters categories={categories} />
       <Listings listings={listings} />

@@ -1,7 +1,8 @@
 "use server";
 import { auth } from "@/auth";
+import { ListingStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { createListingData } from "@/lib/types";
+import { createListingData, ListingFormData } from "@/lib/types";
 
 export const getListings = async ({
   categorySlug,
@@ -107,6 +108,7 @@ export const createListing = async (
   images: string[],
 ) => {
   const session = await auth();
+
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
   }
@@ -122,6 +124,94 @@ export const createListing = async (
       },
     });
     return newListing;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getListingForEdit = async (id: string) => {
+  try {
+    const listing = await prisma.listing.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        type: true,
+        categoryId: true,
+        images: true,
+        createdBy: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    return listing;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateListing = async (
+  id: string,
+  data: createListingData,
+  images: string[],
+  status: ListingStatus,
+) => {
+  if (!id || !data) {
+    throw new Error("Listing Id & Data required");
+  }
+
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const listing = await prisma.listing.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        createdBy: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!listing) {
+      throw new Error("list not found");
+    }
+    if (session.user.id !== listing?.createdBy.id) {
+      throw new Error("Unauthorized");
+    }
+    const updatedListing = await prisma.listing.update({
+      where: {
+        id,
+      },
+      data: {
+        name: data.name,
+        description: data.description,
+        categoryId: data.categoryId,
+        price: data.price,
+        type: data.type,
+        images,
+        status,
+      },
+      select: {
+        id: true,
+      },
+    });
+    return updatedListing;
   } catch (error) {
     console.log(error);
   }

@@ -18,7 +18,7 @@ export const NavLinks = ({ className }: { className?: string }) => {
       icon: <Wrench />,
     },
     {
-      href: "/create-listing",
+      href: "/listing/new",
       label: "List Your Tools",
       icon: <List />,
     },

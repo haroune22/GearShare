@@ -1,3 +1,5 @@
+import { ListingStatus } from "./generated/prisma/enums";
+
 export type ListingFormData = {
   id: string;
   name: string;
@@ -6,6 +8,10 @@ export type ListingFormData = {
   type: "Rent" | "Borrow";
   categoryId: string;
   images: string[];
+  status?: ListingStatus;
+  createdBy?: {
+    id?: string;
+  };
 };
 
 export type createListingData = {

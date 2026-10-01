@@ -4,17 +4,22 @@ import {
   CalendarDays,
   ChevronRight,
   MapPin,
+  Pencil,
   ShieldCheck,
   Star,
   User,
 } from "lucide-react";
 import ImageGallery from "@/components/ImageGallery";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/auth";
+import Link from "next/link";
 
 export default async function Listing({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await auth();
   const { id } = await params;
   const listing = await getListingById(id);
 
@@ -42,13 +47,24 @@ export default async function Listing({
         </section>
 
         <section className="flex flex-col">
-          <div className="mb-4 flex items-center gap-3">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
               Available
             </span>
-            <span className="text-sm text-zinc-500">
+            <span className="text-md text-zinc-500">
               {listing.category.name}
             </span>
+            {session?.user.id === listing.createdBy.id && (
+              <Link
+                href={`/listing/${listing.id}/edit`}
+                className="flex items-center "
+              >
+                <Button className="flex text-lg hover:bg-fuchsia-800/80 cursor-pointer w-full items-center justify-center gap-2 rounded-xl bg-fuchsia-800 px-5 py-5 font-semibold ">
+                  <Pencil className="mr-1" />
+                  Edit
+                </Button>
+              </Link>
+            )}
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">

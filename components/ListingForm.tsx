@@ -14,14 +14,14 @@ import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { formSchema } from "@/lib/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Category } from "@/lib/generated/prisma/client";
 import z from "zod";
 import { ListingFormData } from "@/lib/types";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { Trash, X } from "lucide-react";
 import { useUploadThing } from "@/lib/utils";
-import { createListing } from "@/action/listings";
+import { createListing, updateListing } from "@/action/listings";
 import { useRouter } from "next/navigation";
+import { Category } from "@/lib/generated/prisma/client";
 
 type ListingFormProps = {
   mode: "create" | "edit";
@@ -35,17 +35,25 @@ export default function ListingForm({
   listing,
 }: ListingFormProps) {
   const router = useRouter();
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
-  const [imagePreviews, setImagePreviews] = useState<string[]>(
+  const [existingImages, setExistingImages] = useState<string[]>(
     listing?.images ?? [],
   );
+
+  const [newImages, setNewImages] = useState<{ file: File; blob: string }[]>(
+    [],
+  );
+
+  const [status, setStatus] = useState<"ACTIVE" | "UNAVAILABLE" | "PAUSED">(
+    listing?.status ?? "ACTIVE",
+  );
+
   const { startUpload } = useUploadThing("imageUploader");
 
   const defaultValues = {
     name: listing?.name ?? "",
     description: listing?.description ?? "",
-    price: listing?.price ? Number(listing.price) : 0,
+    price: listing ? Number(listing.price) : undefined,
     type: listing?.type ?? "Rent",
     categoryId: listing?.categoryId ?? "",
     images: listing?.images ?? [],
@@ -64,40 +72,51 @@ export default function ListingForm({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
-    if (!file || imageFiles.length >= 5) return;
+    if (!file || existingImages.length + newImages.length >= 5) return;
 
     const previewUrl = URL.createObjectURL(file);
 
-    setImageFiles((previous) => [...previous, file]);
-    setImagePreviews((previous) => [...previous, previewUrl]);
+    setNewImages((previous) => [
+      ...previous,
+      {
+        file,
+        blob: previewUrl,
+      },
+    ]);
 
     e.target.value = "";
   };
 
   const handleRemoveImage = (index: number) => {
-    const preview = imagePreviews[index];
+    const existingCount = existingImages.length;
 
-    if (preview?.startsWith("blob:")) {
-      URL.revokeObjectURL(preview);
+    if (index < existingCount) {
+      setExistingImages((previous) => previous.filter((_, i) => i !== index));
+      return;
     }
 
-    setImageFiles((previous) => previous.filter((_, i) => i !== index));
-    setImagePreviews((previous) => previous.filter((_, i) => i !== index));
+    const newIndex = index - existingCount;
+    const image = newImages[newIndex];
+
+    if (image) {
+      URL.revokeObjectURL(image.blob);
+
+      setNewImages((previous) => previous.filter((_, i) => i !== newIndex));
+    }
   };
 
   const onSubmit = async (data: z.output<typeof formSchema>) => {
-    console.log(data);
-    console.log("FILES:", imageFiles);
     if (mode === "create") {
+      const newFiles = newImages.map((image) => image.file);
+
       let imageUrls: string[] = [];
 
-      if (imageFiles.length > 0) {
-        const uploadedFiles = await startUpload(imageFiles);
+      if (newFiles.length > 0) {
+        const uploadedFiles = await startUpload(newFiles);
 
         if (!uploadedFiles) {
           throw new Error("Image upload failed");
         }
-
         imageUrls = uploadedFiles.map((file) => file.ufsUrl);
       }
 
@@ -106,8 +125,43 @@ export default function ListingForm({
       if (newListing) {
         router.push(`/listing/${newListing.id}`);
       }
+      return;
+    }
+
+    if (mode === "edit" && listing) {
+      const newFiles = newImages.map((image) => image.file);
+
+      let uploadedUrls: string[] = [];
+
+      if (newFiles.length > 0) {
+        const uploadedFiles = await startUpload(newFiles);
+
+        if (!uploadedFiles) {
+          throw new Error("Image upload failed");
+        }
+
+        uploadedUrls = uploadedFiles.map((file) => file.ufsUrl);
+      }
+
+      const finalImages = [...existingImages, ...uploadedUrls];
+
+      const updatedListing = await updateListing(
+        listing.id,
+        data,
+        finalImages,
+        status,
+      );
+
+      if (updatedListing) {
+        router.push(`/listing/${updatedListing.id}`);
+      }
     }
   };
+
+  const imagePreviews = [
+    ...existingImages,
+    ...newImages.map((image) => image.blob),
+  ];
 
   return (
     <div className="w-full max-w-2xl">
@@ -161,6 +215,26 @@ export default function ListingForm({
               </Field>
             )}
           />
+          {mode === "edit" && (
+            <Field>
+              <FieldLabel htmlFor="listing-status">Status</FieldLabel>
+
+              <select
+                id="listing-status"
+                value={status}
+                onChange={(e) =>
+                  setStatus(
+                    e.target.value as "ACTIVE" | "UNAVAILABLE" | "PAUSED",
+                  )
+                }
+                className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-white"
+              >
+                <option value="ACTIVE">Active</option>
+                <option value="UNAVAILABLE">Unavailable</option>
+                <option value="PAUSED">Paused</option>
+              </select>
+            </Field>
+          )}
 
           <Controller
             name="type"
@@ -191,21 +265,23 @@ export default function ListingForm({
                 <FieldLabel htmlFor="create-form-price">
                   Price per day
                 </FieldLabel>
+
                 <Input
                   id="create-form-price"
                   type="number"
                   min="0"
                   step="0.01"
                   className="max-w-30"
-                  value={field.value}
+                  value={Number.isNaN(field.value) ? "" : field.value}
                   onChange={(e) => {
                     const value = e.target.value;
-                    field.onChange(value === "" ? undefined : Number(value));
+                    field.onChange(value === "" ? "" : Number(value));
                   }}
                   aria-invalid={fieldState.invalid}
                   placeholder="30"
                   disabled={selectedType === "Borrow"}
                 />
+
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -218,15 +294,17 @@ export default function ListingForm({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-form-category">Category</FieldLabel>
+                <FieldLabel htmlFor="create-form-categoryId">
+                  categoryId
+                </FieldLabel>
                 <select
                   {...field}
-                  id="create-form-category"
+                  id="create-form-categoryId"
                   className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-white"
                 >
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
+                  {categories.map((categoryId) => (
+                    <option key={categoryId.id} value={categoryId.id}>
+                      {categoryId.name}
                     </option>
                   ))}
                 </select>
@@ -245,7 +323,7 @@ export default function ListingForm({
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              disabled={imageFiles.length >= 5}
+              disabled={existingImages.length + newImages.length >= 5}
             />
 
             <FieldDescription>
@@ -280,9 +358,33 @@ export default function ListingForm({
               ))}
             </div>
           )}
-          <Button type="submit" className="w-full">
-            {mode === "create" ? "Create listing" : "Update listing"}
-          </Button>
+          <div className="mt-6 flex flex-col gap-3">
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting}
+              className="w-full cursor-pointer bg-fuchsia-800 py-5 hover:bg-fuchsia-800/80"
+            >
+              {form.formState.isSubmitting
+                ? mode === "create"
+                  ? "Creating listing..."
+                  : "Updating listing..."
+                : mode === "create"
+                  ? "Create listing"
+                  : "Update listing"}
+            </Button>
+
+            {mode === "edit" && (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={form.formState.isSubmitting}
+                className="w-full cursor-pointer py-5"
+              >
+                <Trash />
+                Delete listing
+              </Button>
+            )}
+          </div>
         </FieldGroup>
       </form>
     </div>
