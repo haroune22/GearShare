@@ -2,7 +2,7 @@
 import { auth } from "@/auth";
 import { ListingStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { createListingData, ListingFormData } from "@/lib/types";
+import { createListingData } from "@/lib/types";
 
 export const getListings = async ({
   categorySlug,
@@ -214,5 +214,65 @@ export const updateListing = async (
     return updatedListing;
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const deleteListing = async (listingId: string) => {
+  if (!listingId) {
+    throw new Error("Listing Id required");
+  }
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const listing = await prisma.listing.findUnique({
+      where: {
+        id: listingId,
+      },
+      select: {
+        id: true,
+        createdBy: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!listing) {
+      return {
+        success: false,
+        message: "Listing not found",
+      };
+    }
+
+    if (listing.createdBy.id !== session.user.id) {
+      return {
+        success: false,
+        message: "Unauthorized",
+      };
+    }
+
+    // Delete image files first from uploadThing
+
+    await prisma.listing.delete({
+      where: {
+        id: listingId,
+      },
+    });
+
+    return {
+      success: true,
+      message: "Listing deleted successfully",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error,
+      message: "Something went wrong",
+    };
   }
 };

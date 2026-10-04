@@ -22,6 +22,8 @@ import { useUploadThing } from "@/lib/utils";
 import { createListing, updateListing } from "@/action/listings";
 import { useRouter } from "next/navigation";
 import { Category } from "@/lib/generated/prisma/client";
+import { AlertDialog, AlertDialogTrigger } from "./ui/alert-dialog";
+import DeleteListingDialog from "./DeleteListingDialog";
 
 type ListingFormProps = {
   mode: "create" | "edit";
@@ -166,203 +168,249 @@ export default function ListingForm({
   return (
     <div className="w-full max-w-2xl">
       <form id="create-form" onSubmit={form.handleSubmit(onSubmit)}>
-        <FieldGroup>
-          <Controller
-            name="name"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-form-name">Item name</FieldLabel>
-                <Input
-                  {...field}
-                  className="h-12"
-                  id="create-form-name"
-                  aria-invalid={fieldState.invalid}
-                  placeholder="Karcher Pressure Washer"
-                />
-                <FieldDescription>
-                  Give your item a clear and recognizable name.
-                </FieldDescription>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
+        <FieldGroup className="gap-6">
+          <div className="mb-2 space-y-1">
+            <h2 className="text-xl font-semibold text-white">
+              {mode === "create" ? "Create a listing" : "Edit listing"}
+            </h2>
+            <p className="text-sm text-zinc-400">
+              {mode === "create"
+                ? "Add the details of the item you want to share."
+                : "Update your listing information and availability."}
+            </p>
+          </div>
 
-          <Controller
-            name="description"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-form-description">
-                  Description
-                </FieldLabel>
+          <div className="space-y-5 rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-4 sm:p-5">
+            <div>
+              <h3 className="text-sm font-medium text-zinc-200">
+                Basic information
+              </h3>
+              <p className="mt-1 text-xs text-zinc-500">
+                Give people enough information to understand your item.
+              </p>
+            </div>
 
-                <Textarea
-                  {...field}
-                  id="create-form-description"
-                  aria-invalid={fieldState.invalid}
-                  placeholder="Describe your item, its condition, and what people can use it for..."
-                  className="min-h-32"
-                />
-                <FieldDescription>
-                  Tell renters what they should know before requesting it.
-                </FieldDescription>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-          {mode === "edit" && (
-            <Field>
-              <FieldLabel htmlFor="listing-status">Status</FieldLabel>
-
-              <select
-                id="listing-status"
-                value={status}
-                onChange={(e) =>
-                  setStatus(
-                    e.target.value as "ACTIVE" | "UNAVAILABLE" | "PAUSED",
-                  )
-                }
-                className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-white"
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="UNAVAILABLE">Unavailable</option>
-                <option value="PAUSED">Paused</option>
-              </select>
-            </Field>
-          )}
-
-          <Controller
-            name="type"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-form-type">Listing type</FieldLabel>
-                <select
-                  {...field}
-                  id="create-form-type"
-                  className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-white"
-                >
-                  <option value="Rent">Rent</option>
-                  <option value="Borrow">Borrow</option>
-                </select>
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="price"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-form-price">
-                  Price per day
-                </FieldLabel>
-
-                <Input
-                  id="create-form-price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="max-w-30"
-                  value={Number.isNaN(field.value) ? "" : field.value}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    field.onChange(value === "" ? "" : Number(value));
-                  }}
-                  aria-invalid={fieldState.invalid}
-                  placeholder="30"
-                  disabled={selectedType === "Borrow"}
-                />
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="categoryId"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="create-form-categoryId">
-                  categoryId
-                </FieldLabel>
-                <select
-                  {...field}
-                  id="create-form-categoryId"
-                  className="h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-white"
-                >
-                  {categories.map((categoryId) => (
-                    <option key={categoryId.id} value={categoryId.id}>
-                      {categoryId.name}
-                    </option>
-                  ))}
-                </select>
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-          <Field>
-            <FieldLabel htmlFor="create-form-images">Images</FieldLabel>
-
-            <Input
-              id="create-form-images"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              disabled={existingImages.length + newImages.length >= 5}
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="create-form-name">Item name</FieldLabel>
+                  <Input
+                    {...field}
+                    className="h-11"
+                    id="create-form-name"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Karcher Pressure Washer"
+                  />
+                  <FieldDescription>
+                    Give your item a clear and recognizable name.
+                  </FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
             />
 
-            <FieldDescription>
-              Add up to 5 images of your item. You can remove them before
-              creating the listing.
-            </FieldDescription>
-          </Field>
-
-          {imagePreviews.length > 0 && (
-            <div className="flex max-w-2xl flex-wrap gap-4">
-              {imagePreviews.map((image, index) => (
-                <div
-                  className="relative overflow-hidden rounded-lg"
-                  key={image}
-                >
-                  <Image
-                    src={image}
-                    alt={`Listing image ${index + 1}`}
-                    width={200}
-                    height={200}
-                    className="h-48 w-48 object-cover"
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="create-form-description">
+                    Description
+                  </FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="create-form-description"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Describe your item, its condition, and what people can use it for..."
+                    className="min-h-32 resize-y"
                   />
+                  <FieldDescription>
+                    Tell renters what they should know before requesting it.
+                  </FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </div>
 
-                  <Button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute right-2 top-2 h-7 w-7 rounded-full p-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+          <div className="space-y-5 rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-4 sm:p-5">
+            <div>
+              <h3 className="text-sm font-medium text-zinc-200">
+                Listing details
+              </h3>
+              <p className="mt-1 text-xs text-zinc-500">
+                Choose how people can use and request your item.
+              </p>
             </div>
-          )}
-          <div className="mt-6 flex flex-col gap-3">
+
+            {mode === "edit" && (
+              <Field>
+                <FieldLabel htmlFor="listing-status">Availability</FieldLabel>
+                <select
+                  id="listing-status"
+                  value={status}
+                  onChange={(e) =>
+                    setStatus(
+                      e.target.value as "ACTIVE" | "UNAVAILABLE" | "PAUSED",
+                    )
+                  }
+                  className="h-11 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-white outline-none transition focus:border-fuchsia-700 focus:ring-1 focus:ring-fuchsia-700"
+                >
+                  <option value="ACTIVE">Active</option>
+                  <option value="UNAVAILABLE">Unavailable</option>
+                  <option value="PAUSED">Paused</option>
+                </select>
+              </Field>
+            )}
+
+            <Controller
+              name="type"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="create-form-type">
+                    Listing type
+                  </FieldLabel>
+                  <select
+                    {...field}
+                    id="create-form-type"
+                    className="h-11 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-white outline-none transition focus:border-fuchsia-700 focus:ring-1 focus:ring-fuchsia-700"
+                  >
+                    <option value="Rent">Rent</option>
+                    <option value="Borrow">Borrow</option>
+                  </select>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Controller
+                name="price"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="create-form-price">
+                      Price per day
+                    </FieldLabel>
+                    <Input
+                      id="create-form-price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="h-11 w-full"
+                      value={Number.isNaN(field.value) ? "" : field.value}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === "" ? "" : Number(value));
+                      }}
+                      aria-invalid={fieldState.invalid}
+                      placeholder="30"
+                      disabled={selectedType === "Borrow"}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="categoryId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="create-form-categoryId">
+                      Category
+                    </FieldLabel>
+                    <select
+                      {...field}
+                      id="create-form-categoryId"
+                      className="h-11 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 text-sm text-white outline-none transition focus:border-fuchsia-700 focus:ring-1 focus:ring-fuchsia-700"
+                    >
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-5 rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-4 sm:p-5">
+            <div>
+              <h3 className="text-sm font-medium text-zinc-200">Photos</h3>
+              <p className="mt-1 text-xs text-zinc-500">
+                Add up to 5 photos. Good photos help people understand the
+                condition of your item.
+              </p>
+            </div>
+            <Field>
+              <Input
+                id="create-form-images"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={existingImages.length + newImages.length >= 5}
+                className="h-11 cursor-pointer file:mr-4 file:rounded-md file:border-0 file:bg-zinc-800 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-zinc-200 hover:file:bg-zinc-700"
+              />
+              <FieldDescription>
+                {existingImages.length + newImages.length}/5 images
+              </FieldDescription>
+            </Field>
+
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {imagePreviews.map((image, index) => (
+                  <div
+                    className="group relative aspect-square overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900"
+                    key={image}
+                  >
+                    <Image
+                      src={image}
+                      alt={`Listing image ${index + 1}`}
+                      fill
+                      className="object-cover transition duration-300 group-hover:scale-105"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      aria-label={`Remove image ${index + 1}`}
+                      className="absolute right-2 top-2 h-8 w-8 rounded-full bg-black/70 p-0 text-white backdrop-blur-sm hover:bg-red-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    {index === 0 && (
+                      <span className="absolute bottom-2 left-2 rounded-md bg-black/70 px-2 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
+                        Main photo
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4 pt-2">
             <Button
               type="submit"
               disabled={form.formState.isSubmitting}
-              className="w-full cursor-pointer bg-fuchsia-800 py-5 hover:bg-fuchsia-800/80"
+              className="h-12 w-full cursor-pointer bg-fuchsia-800 text-white hover:bg-fuchsia-800/80"
             >
               {form.formState.isSubmitting
                 ? mode === "create"
@@ -373,16 +421,29 @@ export default function ListingForm({
                   : "Update listing"}
             </Button>
 
-            {mode === "edit" && (
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={form.formState.isSubmitting}
-                className="w-full cursor-pointer py-5"
-              >
-                <Trash />
-                Delete listing
-              </Button>
+            {mode === "edit" && listing && (
+              <div className="rounded-xl border border-red-900/40 bg-red-950/10 p-4">
+                <div className="mb-3">
+                  <h3 className="text-sm font-medium text-red-300">
+                    Danger zone
+                  </h3>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Deleting this listing cannot be undone.
+                  </p>
+                </div>
+
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    className="w-full cursor-pointer border-0 bg-red-900/80 py-5 text-white hover:bg-red-900"
+                    render={<Button variant="outline" />}
+                  >
+                    <Trash className="h-4 w-4" />
+                    Delete listing
+                  </AlertDialogTrigger>
+
+                  <DeleteListingDialog listingId={listing.id} />
+                </AlertDialog>
+              </div>
             )}
           </div>
         </FieldGroup>
