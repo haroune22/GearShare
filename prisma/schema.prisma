@@ -123,6 +123,12 @@ model Booking {
   id     String        @id @default(uuid())
   status BookingStatus
 
+  pickupAt   DateTime
+  pickedUpAt DateTime?
+
+  returnAt   DateTime
+  returnedAt DateTime?
+
   owner   User   @relation("owner-item", fields: [ownerId], references: [id])
   ownerId String
 
@@ -188,7 +194,9 @@ enum BookingStatus {
   ACCEPTED
   ACTIVE
   RETURNED
+  PICKED_UP
   CANCELLED
+  NO_SHOW
 }
 
 enum ReviewType {
