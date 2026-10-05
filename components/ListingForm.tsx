@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { ListingFormData } from "@/lib/types";
 import Image from "next/image";
-import { Trash, X } from "lucide-react";
+import { LocationEdit, Trash, X } from "lucide-react";
 import { useUploadThing } from "@/lib/utils";
 import { createListing, updateListing } from "@/action/listings";
 import { useRouter } from "next/navigation";
@@ -55,10 +55,15 @@ export default function ListingForm({
   const defaultValues = {
     name: listing?.name ?? "",
     description: listing?.description ?? "",
-    price: listing ? Number(listing.price) : undefined,
+    price: listing ? Number(listing.price) : 0,
     type: listing?.type ?? "Rent",
     categoryId: listing?.categoryId ?? "",
     images: listing?.images ?? [],
+    location: {
+      address: listing?.location?.address ?? "",
+      latitude: listing?.location?.latitude?.toString() ?? "",
+      longitude: listing?.location?.longitude?.toString() ?? "",
+    },
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -367,7 +372,7 @@ export default function ListingForm({
                 accept="image/*"
                 onChange={handleImageChange}
                 disabled={existingImages.length + newImages.length >= 5}
-                className="h-11 cursor-pointer file:mr-4 file:rounded-md file:border-0 file:bg-zinc-800 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-zinc-200 hover:file:bg-zinc-700"
+                className="h-11 cursor-pointer file:mr-4 file:rounded-md file:border-0 file:bg-zinc-800 file:px-3 file:py-1 file:text-xs file:font-medium file:text-zinc-200 hover:file:bg-zinc-700"
               />
               <FieldDescription>
                 {existingImages.length + newImages.length}/5 images
@@ -404,6 +409,103 @@ export default function ListingForm({
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="space-y-5 rounded-xl border border-zinc-800/80 bg-zinc-950/40 p-4 sm:p-5">
+            <div>
+              <h3 className="text-sm font-medium text-zinc-200">
+                Location details
+              </h3>
+              <p className="mt-1 text-xs text-zinc-500">
+                Address required for pickup.
+              </p>
+            </div>
+
+            <Controller
+              name="location.address"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="create-form-address">Address</FieldLabel>
+
+                  <Input
+                    {...field}
+                    className="h-11"
+                    id="create-form-address"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="500 route Bab Ezzouar, Alger"
+                  />
+
+                  <FieldDescription>Add the pickup address.</FieldDescription>
+
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-zinc-800" />
+              <span className="text-xs text-zinc-500">OR</span>
+              <div className="h-px flex-1 bg-zinc-800" />
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                type="button"
+                variant="default"
+                className="py-5 px-5"
+                onClick={() => {
+                  if (!navigator.geolocation) {
+                    return;
+                  }
+
+                  navigator.geolocation.getCurrentPosition((position) => {
+                    form.setValue(
+                      "location.latitude",
+                      position.coords.latitude.toString(),
+                    );
+
+                    form.setValue(
+                      "location.longitude",
+                      position.coords.longitude.toString(),
+                    );
+                  });
+                }}
+              >
+                <LocationEdit />
+                Add my current location
+              </Button>
+
+              <p className="text-xs text-zinc-500">
+                Your browser will ask for permission to access your location.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Controller
+                name="location.latitude"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>Latitude</FieldLabel>
+                    <Input {...field} readOnly />
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="location.longitude"
+                control={form.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>Longitude</FieldLabel>
+                    <Input {...field} readOnly />
+                  </Field>
+                )}
+              />
+            </div>
           </div>
 
           <div className="space-y-4 pt-2">

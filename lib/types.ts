@@ -8,6 +8,11 @@ export type ListingFormData = {
   type: "Rent" | "Borrow";
   categoryId: string;
   images: string[];
+  location?: {
+    address?: string;
+    latitude?: string;
+    longitude?: string;
+  };
   status?: ListingStatus;
   createdBy?: {
     id?: string;
@@ -20,4 +25,9 @@ export type createListingData = {
   price: number;
   type: "Rent" | "Borrow";
   categoryId: string;
+  location: {
+    address: string;
+    latitude: string;
+    longitude: string;
+  };
 };

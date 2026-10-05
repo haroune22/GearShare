@@ -22,6 +22,7 @@ export default async function Listing({
   const session = await auth();
   const { id } = await params;
   const listing = await getListingById(id);
+  console.log(listing);
 
   if (!listing) {
     return (

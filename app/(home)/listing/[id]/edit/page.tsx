@@ -31,9 +31,15 @@ const UpdateListing = async ({
   const listingForForm = {
     ...listing,
     price: Number(listing.price),
+    location: {
+      address: listing.location?.address ?? "",
+      latitude: listing.location?.latitude.toString() ?? "",
+      longitude: listing.location?.longitude.toString() ?? "",
+    },
   };
 
   const cats = await getCategory();
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center px-6 py-10 md:px-20">
       <div className="mb-10 flex flex-col items-center justify-center gap-4 text-center">

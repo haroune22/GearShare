@@ -62,6 +62,13 @@ export const getListingById = async (id: string) => {
         type: true,
         category: true,
         images: true,
+        location: {
+          select: {
+            address: true,
+            latitude: true,
+            longitude: true,
+          },
+        },
         booking: {
           select: {
             id: true,
@@ -117,6 +124,13 @@ export const createListing = async (
       data: {
         ...data,
         images,
+        location: {
+          create: {
+            address: data.location.address,
+            longitude: Number(data.location.latitude),
+            latitude: Number(data.location.latitude),
+          },
+        },
         userId: session?.user.id,
       },
       select: {
@@ -141,6 +155,13 @@ export const getListingForEdit = async (id: string) => {
         description: true,
         price: true,
         type: true,
+        location: {
+          select: {
+            address: true,
+            latitude: true,
+            longitude: true,
+          },
+        },
         categoryId: true,
         images: true,
         createdBy: {
@@ -206,6 +227,13 @@ export const updateListing = async (
         type: data.type,
         images,
         status,
+        location: {
+          update: {
+            address: data.location.address,
+            latitude: Number(data.location.latitude),
+            longitude: Number(data.location.longitude),
+          },
+        },
       },
       select: {
         id: true,

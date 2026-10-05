@@ -55,4 +55,9 @@ export const formSchema = z.object({
   price: z.number().min(0, "Price cannot be negative."),
   type: z.enum(["Rent", "Borrow"]),
   categoryId: z.string().min(1, "Please select a category."),
+  location: z.object({
+    address: z.string().min(1, "Please add an address."),
+    latitude: z.string().min(1, "Please add an latitude."),
+    longitude: z.string().min(1, "Please add an longitude."),
+  }),
 });
