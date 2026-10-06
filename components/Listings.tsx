@@ -26,6 +26,7 @@ const Listings = async ({
                     src={listing.images[0]}
                     alt={listing.name}
                     fill
+                    sizes=""
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (

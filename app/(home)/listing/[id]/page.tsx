@@ -13,6 +13,8 @@ import ImageGallery from "@/components/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
 import Link from "next/link";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import BookingRequestDialog from "@/components/BookingRequestDialog";
 
 export default async function Listing({
   params,
@@ -22,7 +24,7 @@ export default async function Listing({
   const session = await auth();
   const { id } = await params;
   const listing = await getListingById(id);
-  console.log(listing);
+  // console.log(listing);
 
   if (!listing) {
     return (
@@ -105,11 +107,26 @@ export default async function Listing({
               </p>
             </div>
           </div>
-
-          <button className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-fuchsia-600 px-6 py-4 font-semibold transition hover:bg-fuchsia-500">
-            <CalendarDays size={19} />
-            Request to rent
-          </button>
+          <Dialog>
+            <DialogTrigger
+              render={
+                <button className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-fuchsia-600 px-6 py-4 font-semibold transition hover:bg-fuchsia-500">
+                  <CalendarDays size={19} />
+                  Request to rent
+                </button>
+              }
+            />
+            <BookingRequestDialog
+              id={listing.id}
+              createdBy={listing.createdBy!}
+              description={listing.description}
+              address={listing.location?.address || ""}
+              latitude={Number(listing.location?.latitude)}
+              longitude={Number(listing.location?.longitude)}
+              price={Number(listing.price)}
+              name={listing.name}
+            />
+          </Dialog>
 
           <p className="mt-3 text-center text-xs text-zinc-600">
             You&apos;ll choose your rental dates next
@@ -127,6 +144,7 @@ export default async function Listing({
                 alt={listing.createdBy.name ?? "Owner"}
                 width={56}
                 height={56}
+                sizes=""
                 className="rounded-full object-cover"
               />
             ) : (
