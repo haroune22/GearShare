@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { CalendarDays, MapPin, UserRound } from "lucide-react";
 import { type DateRange } from "react-day-picker";
-
+import { useRouter } from "next/navigation";
 import { Calendar } from "./ui/calendar";
 import {
   DialogClose,
@@ -14,14 +14,14 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
+import { createBooking } from "@/action/booking";
 
 type BookingRequestDialogProps = {
   id: string;
+  renterId: string;
   name: string;
   description: string;
   address: string;
-  latitude: number;
-  longitude: number;
   price: number;
   createdBy: {
     id: string;
@@ -32,14 +32,16 @@ type BookingRequestDialogProps = {
 };
 
 function BookingRequestDialog({
+  id,
   createdBy,
   description,
   address,
   price,
   name,
 }: BookingRequestDialogProps) {
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
+  // console.log(dateRange);
   const rentalDays =
     dateRange?.from && dateRange?.to
       ? Math.max(
@@ -52,6 +54,20 @@ function BookingRequestDialog({
       : 0;
 
   const totalPrice = rentalDays * price;
+
+  const router = useRouter();
+
+  const handleCreateBooking = async () => {
+    if (!dateRange || !rentalDays) return;
+
+    const result = await createBooking(id, dateRange);
+
+    if (result.status !== 201) {
+      return;
+    }
+
+    router.push(`/booking/${result.bookingId}`);
+  };
 
   return (
     <DialogContent className="max-h-[90vh] overflow-y-auto border-zinc-700 bg-zinc-950 text-zinc-100 sm:max-w-lg">
@@ -159,8 +175,9 @@ function BookingRequestDialog({
         />
         <Button
           type="button"
+          onClick={handleCreateBooking}
           disabled={!dateRange?.from || !dateRange?.to}
-          className="bg-fuchsia-600 py-5 font-semibold text-lg text-white hover:bg-fuchsia-500 disabled:bg-zinc-800 disabled:text-zinc-500"
+          className="bg-fuchsia-700 py-5 cursor-pointer font-semibold text-lg text-white hover:bg-fuchsia-600 disabled:bg-zinc-800 disabled:text-zinc-500"
         >
           Request to rent
         </Button>

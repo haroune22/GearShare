@@ -126,6 +126,9 @@ model Booking {
   pickupAt   DateTime
   pickedUpAt DateTime?
 
+  PricePerDay Decimal
+  totalPrice  Decimal
+
   returnAt   DateTime
   returnedAt DateTime?
 

@@ -15,6 +15,7 @@ import { auth } from "@/auth";
 import Link from "next/link";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import BookingRequestDialog from "@/components/BookingRequestDialog";
+import { redirect } from "next/navigation";
 
 export default async function Listing({
   params,
@@ -22,6 +23,11 @@ export default async function Listing({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
+
+  if (!session?.user.id) {
+    redirect("/");
+  }
+
   const { id } = await params;
   const listing = await getListingById(id);
   // console.log(listing);
@@ -118,11 +124,10 @@ export default async function Listing({
             />
             <BookingRequestDialog
               id={listing.id}
+              renterId={session.user.id}
               createdBy={listing.createdBy!}
               description={listing.description}
               address={listing.location?.address || ""}
-              latitude={Number(listing.location?.latitude)}
-              longitude={Number(listing.location?.longitude)}
               price={Number(listing.price)}
               name={listing.name}
             />
