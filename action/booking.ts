@@ -86,3 +86,9 @@ export const createBooking = async (
     };
   }
 };
+
+export const getBookings = async (view: string, userId?: string) => {
+  const bookings = await prisma.booking.findMany({
+    where: {},
+  });
+};
