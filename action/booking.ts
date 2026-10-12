@@ -87,8 +87,91 @@ export const createBooking = async (
   }
 };
 
-export const getBookings = async (view: string, userId?: string) => {
-  const bookings = await prisma.booking.findMany({
-    where: {},
-  });
+export const getBookings = async (view: string) => {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const filters = ["all", "renting", "request"];
+
+  if (!filters.includes(view)) {
+    return {
+      status: 404,
+      message: "View is needed",
+    };
+  }
+
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: {
+        ...(view === "renting" && { renterId: session.user.id }),
+        ...(view === "request" && { ownerId: session.user.id }),
+        ...(view === "all" && {
+          OR: [{ renterId: session.user.id }, { ownerId: session.user.id }],
+        }),
+      },
+      select: {
+        id: true,
+        totalPrice: true,
+        createdAt: true,
+        ownerId: true,
+        renterId: true,
+        pickupAt: true,
+        returnAt: true,
+        status: true,
+        PricePerDay: true,
+        listing: {
+          select: {
+            id: true,
+            name: true,
+            images: true,
+          },
+        },
+        owner: {
+          select: {
+            id: true,
+            userName: true,
+            image: true,
+          },
+        },
+        renter: {
+          select: {
+            id: true,
+            userName: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    if (bookings.length === 0) {
+      return {
+        status: 400,
+        message: "No bookings found",
+      };
+    }
+
+    const filteredBookings = bookings.map((b) => {
+      const { owner, renter, ...bookingData } = b;
+
+      return b.renterId === session.user.id
+        ? { ...bookingData, otherUser: owner }
+        : { ...bookingData, otherUser: renter };
+    });
+
+    return {
+      status: 201,
+      message: "Booking found",
+      bookings: filteredBookings,
+    };
+  } catch (error) {
+    console.error(error);
+
+    return {
+      status: 500,
+      message: "Internal server error",
+    };
+  }
 };

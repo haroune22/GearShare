@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 const navigation = [
   {
     label: "Overview",
-    href: "/booking",
+    href: "/booking?view=all",
     icon: SquareKanban,
     view: "all",
   },
@@ -25,10 +25,10 @@ const navigation = [
     icon: Box,
   },
   {
-    label: "Requests",
-    href: "/booking?view=requests",
+    label: "Request",
+    href: "/booking?view=request",
     icon: ListChecks,
-    view: "requests",
+    view: "request",
     count: 2,
   },
 ];

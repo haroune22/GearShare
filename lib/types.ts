@@ -31,3 +31,44 @@ export type createListingData = {
     longitude: string;
   };
 };
+
+import type { Prisma } from "@/lib/generated/prisma/client";
+
+export type BookingWithRelations = Prisma.BookingGetPayload<{
+  select: {
+    id: true;
+    totalPrice: true;
+    createdAt: true;
+    ownerId: true;
+    renterId: true;
+    pickupAt: true;
+    returnAt: true;
+    status: true;
+    PricePerDay: true;
+    listing: {
+      select: {
+        id: true;
+        name: true;
+        images: true;
+      };
+    };
+    owner: {
+      select: {
+        id: true;
+        userName: true;
+        image: true;
+      };
+    };
+    renter: {
+      select: {
+        id: true;
+        userName: true;
+        image: true;
+      };
+    };
+  };
+}>;
+
+export type BookingCardData = Omit<BookingWithRelations, "owner" | "renter"> & {
+  otherUser: BookingWithRelations["owner"];
+};
