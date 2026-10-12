@@ -27,6 +27,15 @@ const BookingPage = async ({
 
   const data = await getBookings(view as BookingView);
 
+  const convertedData = data?.bookings?.map((b) => {
+    const { PricePerDay, totalPrice, ...bookingData } = b;
+    return {
+      PricePerDay: Number(PricePerDay),
+      totalPrice: Number(totalPrice),
+      ...bookingData,
+    };
+  });
+
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-7xl">
@@ -45,8 +54,8 @@ const BookingPage = async ({
           </p>
         </header>
 
-        {data.bookings?.length ? (
-          <BookingDashboard bookings={data.bookings} view={view} />
+        {convertedData?.length ? (
+          <BookingDashboard bookings={convertedData} view={view} />
         ) : (
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
             <h2 className="text-xl font-semibold">No bookings yet</h2>

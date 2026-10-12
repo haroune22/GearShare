@@ -69,6 +69,11 @@ export type BookingWithRelations = Prisma.BookingGetPayload<{
   };
 }>;
 
-export type BookingCardData = Omit<BookingWithRelations, "owner" | "renter"> & {
+export type BookingCardData = Omit<
+  BookingWithRelations,
+  "owner" | "renter" | "PricePerDay" | "totalPrice"
+> & {
+  PricePerDay: number;
+  totalPrice: number;
   otherUser: BookingWithRelations["owner"];
 };

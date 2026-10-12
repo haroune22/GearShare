@@ -1,8 +1,10 @@
+"use client";
 import { CalendarDays, ChevronDown, SlidersHorizontal } from "lucide-react";
 
 import BookingSideBar from "@/components/BookingSideBar";
 import { BookingCardData } from "@/lib/types";
 import BookingCard from "./BookingCards";
+import { useEffect, useState } from "react";
 
 type BookingDashboardProps = {
   bookings: BookingCardData[];
@@ -10,6 +12,14 @@ type BookingDashboardProps = {
 };
 
 const statusFilters = [
+  { label: "All", value: "All" },
+  { label: "Active", value: "ACTIVE" },
+  { label: "Pending", value: "PENDING" },
+  { label: "Completed", value: "COMPLETED" },
+  { label: "Cancelled", value: "CANCELLED" },
+  { label: "Picked up", value: "PICKED_UP" },
+];
+type statusFilters = [
   "All",
   "Active",
   "Pending",
@@ -19,6 +29,10 @@ const statusFilters = [
 ];
 
 const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
+  const [data, setData] = useState<BookingCardData[]>(bookings);
+
+  console.log(selectedStatus);
   const headings: Record<string, { title: string; description: string }> = {
     all: {
       title: "Your bookings",
@@ -35,6 +49,11 @@ const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
   };
 
   const heading = headings[view] ?? headings.all;
+
+  const filteredData = bookings.filter(
+    (b) => selectedStatus === "All" || b.status === selectedStatus,
+  );
+  console.log(bookings.map((b) => b.status));
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -68,17 +87,18 @@ const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
 
           <div className="mb-6 overflow-x-auto">
             <div className="flex min-w-max gap-2 border-b border-zinc-800 pb-3">
-              {statusFilters.map((filter, index) => (
+              {statusFilters.map((filter) => (
                 <button
-                  key={filter}
+                  onClick={() => setSelectedStatus(filter.value)}
+                  key={filter.label}
                   type="button"
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    index === 0
+                    selectedStatus === filter.value
                       ? "bg-fuchsia-500 text-white"
                       : "border border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-100"
                   }`}
                 >
-                  {filter}
+                  {filter.label}
                 </button>
               ))}
             </div>
@@ -94,9 +114,9 @@ const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
             <span className="text-xs text-zinc-500">Most recent first</span>
           </div>
 
-          {bookings.length > 0 ? (
+          {filteredData.length > 0 ? (
             <div className="flex flex-col gap-4">
-              {bookings.map((booking) => (
+              {filteredData.map((booking) => (
                 <BookingCard key={booking.id} booking={booking} />
               ))}
             </div>
@@ -105,11 +125,9 @@ const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
               <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
                 <CalendarDays className="size-5 text-zinc-400" />
               </div>
-
               <h2 className="text-lg font-medium text-zinc-100">
                 No bookings yet
               </h2>
-
               <p className="mt-2 max-w-sm text-sm leading-6 text-zinc-400">
                 Your bookings will appear here once you start renting items or
                 receive requests from other members.
