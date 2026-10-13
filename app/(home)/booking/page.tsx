@@ -57,7 +57,7 @@ const BookingPage = async ({
         {convertedData?.length ? (
           <BookingDashboard bookings={convertedData} view={view} />
         ) : (
-          <section className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
+          <section className="rounded-2xl border border-white/10 bg-white/3 px-6 py-16 text-center">
             <h2 className="text-xl font-semibold">No bookings yet</h2>
 
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-400">

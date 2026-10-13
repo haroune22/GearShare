@@ -4,7 +4,8 @@ import { CalendarDays, ChevronDown, SlidersHorizontal } from "lucide-react";
 import BookingSideBar from "@/components/BookingSideBar";
 import { BookingCardData } from "@/lib/types";
 import BookingCard from "./BookingCards";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 type BookingDashboardProps = {
   bookings: BookingCardData[];
@@ -12,27 +13,19 @@ type BookingDashboardProps = {
 };
 
 const statusFilters = [
-  { label: "All", value: "All" },
-  { label: "Active", value: "ACTIVE" },
-  { label: "Pending", value: "PENDING" },
-  { label: "Completed", value: "COMPLETED" },
-  { label: "Cancelled", value: "CANCELLED" },
-  { label: "Picked up", value: "PICKED_UP" },
-];
-type statusFilters = [
-  "All",
-  "Active",
-  "Pending",
-  "Completed",
-  "Cancelled",
-  "Picked up",
+  "ALL",
+  "PENDING",
+  "ACCEPTED",
+  "ACTIVE",
+  "RETURNED",
+  "PICKED_UP",
+  "CANCELLED",
+  "NO_SHOW",
 ];
 
 const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
-  const [selectedStatus, setSelectedStatus] = useState<string>("All");
-  const [data, setData] = useState<BookingCardData[]>(bookings);
+  const [selectedStatus, setSelectedStatus] = useState("ALL");
 
-  console.log(selectedStatus);
   const headings: Record<string, { title: string; description: string }> = {
     all: {
       title: "Your bookings",
@@ -51,10 +44,9 @@ const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
   const heading = headings[view] ?? headings.all;
 
   const filteredData = bookings.filter(
-    (b) => selectedStatus === "All" || b.status === selectedStatus,
+    (b) => selectedStatus === "ALL" || b.status === selectedStatus,
   );
   console.log(bookings.map((b) => b.status));
-
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:gap-8 lg:px-8 lg:py-8">
@@ -85,21 +77,20 @@ const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
             </div>
           </div>
 
-          <div className="mb-6 overflow-x-auto">
+          <div className="mb-6 overflow-hidden">
             <div className="flex min-w-max gap-2 border-b border-zinc-800 pb-3">
               {statusFilters.map((filter) => (
-                <button
-                  onClick={() => setSelectedStatus(filter.value)}
-                  key={filter.label}
-                  type="button"
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    selectedStatus === filter.value
+                <Button
+                  onClick={() => setSelectedStatus(filter)}
+                  key={filter}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium cursor-pointer ${
+                    filter === selectedStatus
                       ? "bg-fuchsia-500 text-white"
                       : "border border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-100"
                   }`}
                 >
-                  {filter.label}
-                </button>
+                  {filter}
+                </Button>
               ))}
             </div>
           </div>

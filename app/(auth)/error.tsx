@@ -12,6 +12,7 @@ export default function AuthError({
   reset: () => void;
 }) {
   const router = useRouter();
+
   const reload = () => {
     startTransition(() => {
       router.refresh();
