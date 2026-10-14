@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DateRange } from "react-day-picker";
+import { string } from "zod";
 
 export const createBooking = async (
   listingId: string,
@@ -169,6 +170,101 @@ export const getBookings = async (view: string) => {
   } catch (error) {
     console.error(error);
 
+    return {
+      status: 500,
+      message: "Internal server error",
+    };
+  }
+};
+
+export const getBookingInfo = async (id: string) => {
+  const session = await auth();
+
+  if (!session || !session.user.id) {
+    throw new Error("unauthorized");
+  }
+
+  if (!id) {
+    throw new Error("id required");
+  }
+
+  try {
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id,
+        OR: [{ renterId: session.user.id }, { ownerId: session.user.id }],
+      },
+      select: {
+        id: true,
+        PricePerDay: true,
+        createdAt: true,
+        pickupAt: true,
+        pickedUpAt: true,
+        returnAt: true,
+        returnedAt: true,
+        status: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            userName: true,
+            image: true,
+          },
+        },
+        renter: {
+          select: {
+            id: true,
+            name: true,
+            userName: true,
+            image: true,
+          },
+        },
+        reviews: {
+          select: {
+            content: true,
+            id: true,
+            createdAt: true,
+            rating: true,
+            title: true,
+            reviewer: {
+              select: {
+                id: true,
+                name: true,
+                userName: true,
+                image: true,
+              },
+            },
+          },
+        },
+        totalPrice: true,
+        listing: {
+          select: {
+            category: true,
+            description: true,
+            images: true,
+            name: true,
+            location: true,
+            price: true,
+            type: true,
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return {
+        status: 404,
+        message: "Not found",
+      };
+    }
+    return {
+      status: 200,
+      message: "Booking found",
+      booking,
+    };
+  } catch (error) {
+    console.log(error);
     return {
       status: 500,
       message: "Internal server error",

@@ -83,7 +83,7 @@ const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
                 <Button
                   onClick={() => setSelectedStatus(filter)}
                   key={filter}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium cursor-pointer ${
+                  className={`rounded-lg  px-4 py-2 text-sm font-medium cursor-pointer ${
                     filter === selectedStatus
                       ? "bg-fuchsia-500 text-white"
                       : "border border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-100"

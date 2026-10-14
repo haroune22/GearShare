@@ -5,6 +5,7 @@ import Listings from "@/components/Listings";
 import Why from "@/components/Why";
 import { Button } from "@/components/ui/button";
 import { ListCheck } from "lucide-react";
+import Link from "next/link";
 
 export default async function Home() {
   const listings = await getListings({});
@@ -23,9 +24,13 @@ export default async function Home() {
                 Find the right tools for your next job.
               </p>
             </div>
-            <Button className="w-fit cursor-pointer bg-[#9852f2] px-6 py-6 text-base font-bold transition-colors hover:bg-[#9852f2]/80">
-              <ListCheck className="mr-2 h-5 w-5" /> Create Listing
-            </Button>
+            <Link
+              href="/listing/new"
+              className="w-fit flex rounded-lg cursor-pointer bg-[#9852f2] px-5 py-5 text-base font-bold transition-colors hover:bg-[#9852f2]/80"
+            >
+              <ListCheck className="mr-2 h-5 w-5" />
+              Create Listing
+            </Link>
           </div>
           <Listings listings={listings} />
         </section>
