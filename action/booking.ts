@@ -3,7 +3,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DateRange } from "react-day-picker";
-import { string } from "zod";
 
 export const createBooking = async (
   listingId: string,

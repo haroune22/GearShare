@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Home, List, Wrench } from "lucide-react";
+import { Home, List, ShoppingCartIcon, Wrench } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -21,6 +21,11 @@ export const NavLinks = ({ className }: { className?: string }) => {
       href: "/listing/new",
       label: "List Your Tools",
       icon: <List />,
+    },
+    {
+      href: "/booking?view=all",
+      label: "Booking",
+      icon: <ShoppingCartIcon />,
     },
   ];
   const pathname = usePathname();

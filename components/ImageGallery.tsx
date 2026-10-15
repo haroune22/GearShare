@@ -39,7 +39,7 @@ const ImageGallery = ({ images, name }: ImageGalleryProps) => {
             key={image}
             type="button"
             onClick={() => setSelectedImage(index)}
-            className={`relative h-20 w-24 overflow-hidden rounded-lg border ${
+            className={`relative h-22 w-24 overflow-hidden rounded-lg border ${
               selectedImage === index ? "border-fuchsia-500" : "border-zinc-800"
             }`}
           >
