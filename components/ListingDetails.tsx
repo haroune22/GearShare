@@ -31,7 +31,7 @@ type ListingDetailsProps = {
 
 export const ListingDetails = ({ listing }: ListingDetailsProps) => {
   return (
-    <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-14">
+    <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
       <section className="min-w-0">
         <ImageGallery images={listing.images} name={listing.name} />
       </section>
@@ -40,7 +40,7 @@ export const ListingDetails = ({ listing }: ListingDetailsProps) => {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Available to {listing.type === "Rent" ? "Rent" : "borrow"}
+            {listing.type === "Rent" ? "Rent" : "borrow"}
           </span>
 
           <span className="rounded-full border border-zinc-800 bg-zinc-900/70 px-3 py-1.5 text-xs font-medium text-zinc-400">
@@ -59,7 +59,7 @@ export const ListingDetails = ({ listing }: ListingDetailsProps) => {
           <span className="text-zinc-400">12 reviews</span>
         </div>
 
-        <div className="relative mt-7 overflow-hidden rounded-2xl border border-fuchsia-500/20 bg-linear-to-br from-fuchsia-500/9 via-zinc-900/90 to-zinc-950 p-5 md:p-6">
+        <div className="relative mt-4 overflow-hidden rounded-2xl border border-fuchsia-500/20 bg-linear-to-br from-fuchsia-500/9 via-zinc-900/90 to-zinc-950 p-4 md:p-5">
           <div className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-fuchsia-500/10 blur-3xl" />
           <div className="relative">
             <p className="text-sm font-medium text-zinc-400">
@@ -82,14 +82,14 @@ export const ListingDetails = ({ listing }: ListingDetailsProps) => {
           </div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-6">
           <h2 className="text-lg font-semibold text-white">About this item</h2>
-          <p className="mt-3 whitespace-pre-line text-sm leading-7 text-zinc-400 md:text-base">
+          <p className="mt-1 whitespace-pre-line text-sm leading-7 text-zinc-400 md:text-base">
             {listing.description}
           </p>
         </div>
 
-        <div className="mt-8 border-t border-zinc-800/80 pt-6">
+        <div className="mt-6 border-t border-zinc-800/80 pt-6">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-fuchsia-500/15 bg-fuchsia-500/8">
               <MapPin size={19} className="text-fuchsia-400" />

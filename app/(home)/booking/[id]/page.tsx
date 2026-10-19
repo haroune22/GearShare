@@ -28,7 +28,7 @@ const BookingIdPage = async ({
     );
   }
   return (
-    <main className="min-h-screen w-full px-6 py-10 text-white md:px-12 lg:px-20">
+    <main className="min-h-screen w-full px-6 py-8 text-white md:px-12 lg:px-20">
       <div className="mb-8 flex items-center gap-2 text-sm text-zinc-500">
         <span>Booking</span>
         <ChevronRightCircle size={15} />
