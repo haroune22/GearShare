@@ -3,7 +3,6 @@ import { getListings } from "@/action/listings";
 import Listings from "@/components/Listings";
 import ListingsFilters from "@/components/ListingsFilters";
 import ListingsPagination from "@/components/ListingsPagination";
-import { Button } from "@/components/ui/button";
 import { ListCheck } from "lucide-react";
 import Link from "next/link";
 

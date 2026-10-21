@@ -1,5 +1,6 @@
 import { getBookingInfo } from "@/action/booking";
 import { auth } from "@/auth";
+import BookingDetails from "@/components/BookingDetails";
 import { ListingDetails } from "@/components/ListingDetails";
 import { StatusProgress } from "@/components/StatusProgress";
 
@@ -36,6 +37,7 @@ const BookingIdPage = async ({
       </div>
       <StatusProgress bookingStatus={data.booking.status} />
       <ListingDetails listing={data.booking.listing} />
+      <BookingDetails bookingData={data.booking} />
     </main>
   );
 };
