@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import BookingDetails from "@/components/BookingDetails";
 import { ListingDetails } from "@/components/ListingDetails";
 import { StatusProgress } from "@/components/StatusProgress";
-
+import BookingActions from "@/components/BookingActions";
 import { ChevronRightCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -38,6 +38,14 @@ const BookingIdPage = async ({
       <StatusProgress bookingStatus={data.booking.status} />
       <ListingDetails listing={data.booking.listing} />
       <BookingDetails bookingData={data.booking} />
+      <BookingActions
+        currentUserId={session.user.id}
+        bookingId={data.booking.id}
+        bookingStatus={data.booking.status}
+        ownerId={data.booking.owner.id}
+        renterId={data.booking.renter.id}
+        pickupAt={data.booking.pickupAt}
+      />
     </main>
   );
 };
