@@ -199,6 +199,7 @@ enum BookingStatus {
   RETURNED
   PICKED_UP
   CANCELLED
+  DECLINED
   NO_SHOW
 }
 

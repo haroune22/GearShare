@@ -1,12 +1,13 @@
 "use client";
 
 import { BookingStatus } from "@/lib/generated/prisma/enums";
+import { useRouter } from "next/navigation";
+import { AcceptBooking, DeclineBooking } from "@/action/booking";
 import {
   Ban,
   Check,
   Clock,
   CreditCard,
-  LoaderCircle,
   PackageCheck,
   ShieldAlert,
   X,
@@ -19,9 +20,32 @@ const ActionButton = ({
   variant = "primary",
 }: {
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: () => Promise<{ status: number; message: string }>;
   variant?: "primary" | "secondary" | "danger";
 }) => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    if (!onClick || loading) return;
+
+    setLoading(true);
+
+    try {
+      const result = await onClick();
+
+      if (result.status === 200) {
+        router.refresh();
+      } else {
+        console.error(result.message);
+      }
+    } catch (error) {
+      console.error("Booking action failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const styles = {
     primary:
       "border border-fuchsia-500 bg-fuchsia-600 text-white hover:bg-fuchsia-500",
@@ -34,32 +58,25 @@ const ActionButton = ({
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${styles[variant]}`}
+      onClick={handleClick}
+      disabled={loading}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${styles[variant]}`}
     >
+      {loading && (
+        <span className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
+      )}
       {children}
     </button>
   );
 };
+
 type BookingActionsProps = {
   bookingId: string;
   bookingStatus: BookingStatus;
   ownerId: string;
   renterId: string;
-
-  // Additional data needed for perspective and visibility
   currentUserId?: string;
   pickupAt?: Date;
-  paymentStatus?: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
-
-  // Wire these to your logic later
-  onPay?: () => void;
-  onAccept?: () => void;
-  onDecline?: () => void;
-  onConfirmPickup?: () => void;
-  onConfirmReturn?: () => void;
-  onCancel?: () => void;
-  onMarkNoShow?: () => void;
 };
 
 const BookingActions = ({
@@ -69,14 +86,6 @@ const BookingActions = ({
   renterId,
   currentUserId,
   pickupAt,
-  paymentStatus,
-  onPay,
-  onAccept,
-  onDecline,
-  onConfirmPickup,
-  onConfirmReturn,
-  onCancel,
-  onMarkNoShow,
 }: BookingActionsProps) => {
   const isOwner = currentUserId === ownerId;
   const isRenter = currentUserId === renterId;
@@ -88,9 +97,6 @@ const BookingActions = ({
   const isAccepted = status === "ACCEPTED";
   const isPickedUp = status === "PICKED_UP";
   const isReturned = status === "RETURNED";
-
-  const isPaid = paymentStatus === "PAID";
-  const isUnpaid = paymentStatus === "PENDING";
 
   const [passedDeadline, setPassedDeadline] = useState<number | null>(null);
 
@@ -114,10 +120,10 @@ const BookingActions = ({
   const pickupDeadlinePassed =
     pickupDeadline !== null && passedDeadline === pickupDeadline;
 
-  // UI visibility rules — the server must validate these again.
-  const canCancel = isOwner && (isPending || isAccepted) && isUnpaid;
+  // UI visibility only. Validate permissions and status again on the server.
+  const canCancel = isOwner && (isPending || isAccepted);
 
-  const canMarkNoShow = isOwner && isAccepted && isPaid && pickupDeadlinePassed;
+  const canMarkNoShow = isOwner && isAccepted && pickupDeadlinePassed;
 
   const isTerminal = ["COMPLETED", "CANCELLED", "NO_SHOW", "DECLINED"].includes(
     status,
@@ -149,6 +155,7 @@ const BookingActions = ({
       </div>
 
       <div className="h-px bg-zinc-800" />
+
       <div className="space-y-3">
         {isPending && isOwner && (
           <>
@@ -157,12 +164,15 @@ const BookingActions = ({
             </p>
 
             <div className="flex flex-col gap-2 sm:flex-row">
-              <ActionButton onClick={onAccept}>
+              <ActionButton onClick={() => AcceptBooking(bookingId)}>
                 <Check className="size-4" />
                 Accept request
               </ActionButton>
 
-              <ActionButton variant="secondary" onClick={onDecline}>
+              <ActionButton
+                variant="secondary"
+                onClick={() => DeclineBooking(bookingId)}
+              >
                 <X className="size-4" />
                 Decline request
               </ActionButton>
@@ -178,34 +188,26 @@ const BookingActions = ({
           />
         )}
 
-        {isAccepted && isRenter && isUnpaid && (
+        {isAccepted && isRenter && (
           <>
             <InfoMessage
               icon={<CreditCard className="size-5" />}
               title="Your request was accepted"
-              description="Complete payment to continue with your rental."
+              description="Your booking has been accepted. Continue to the payment step when it's ready."
             />
 
-            <ActionButton onClick={onPay}>
+            <ActionButton>
               <CreditCard className="size-4" />
               Pay for booking
             </ActionButton>
           </>
         )}
 
-        {isAccepted && isOwner && isUnpaid && (
+        {isAccepted && isOwner && (
           <InfoMessage
             icon={<Clock className="size-5" />}
-            title="Awaiting payment"
-            description="The renter needs to complete payment before the rental can proceed."
-          />
-        )}
-
-        {isAccepted && isPaid && (
-          <InfoMessage
-            icon={<Check className="size-5" />}
-            title="Payment completed"
-            description="Coordinate the pickup according to your booking arrangements."
+            title="Request accepted"
+            description="Coordinate the pickup with the renter according to your booking arrangements."
           />
         )}
 
@@ -217,7 +219,7 @@ const BookingActions = ({
               description="The rental is underway. Confirm the return when the item has been handed back."
             />
 
-            <ActionButton onClick={onConfirmReturn}>
+            <ActionButton>
               <PackageCheck className="size-4" />
               Confirm return
             </ActionButton>
@@ -260,6 +262,7 @@ const BookingActions = ({
       {!isTerminal && (canCancel || canMarkNoShow) && (
         <>
           <div className="h-px bg-zinc-800" />
+
           <div className="space-y-3">
             <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
               Other actions
@@ -267,7 +270,7 @@ const BookingActions = ({
 
             {canMarkNoShow && (
               <div className="space-y-2">
-                <ActionButton variant="danger" onClick={onMarkNoShow}>
+                <ActionButton variant="danger">
                   <ShieldAlert className="size-4" />
                   Mark renter as no-show
                 </ActionButton>
@@ -280,7 +283,7 @@ const BookingActions = ({
             )}
 
             {canCancel && (
-              <ActionButton variant="danger" onClick={onCancel}>
+              <ActionButton variant="danger">
                 <Ban className="size-4" />
                 Cancel booking
               </ActionButton>
@@ -310,6 +313,7 @@ function InfoMessage({
   return (
     <div className="flex items-start gap-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4">
       <div className="mt-0.5 shrink-0 text-fuchsia-400">{icon}</div>
+
       <div className="space-y-1">
         <p className="text-sm font-medium text-zinc-100">{title}</p>
         <p className="text-sm leading-5 text-zinc-400">{description}</p>

@@ -270,3 +270,121 @@ export const getBookingInfo = async (id: string) => {
     };
   }
 };
+
+export const AcceptBooking = async (id: string) => {
+  const session = await auth();
+
+  if (!session || !session.user.id) {
+    throw new Error("unauthorized");
+  }
+
+  if (!id) {
+    throw new Error("id required");
+  }
+
+  try {
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id,
+      },
+      select: {
+        ownerId: true,
+        status: true,
+      },
+    });
+
+    if (!booking) {
+      return {
+        status: 404,
+        message: "Booking not found",
+      };
+    }
+
+    if (booking.ownerId !== session.user.id || booking.status !== "PENDING") {
+      return {
+        status: 400,
+        message: "Unable to change status",
+      };
+    }
+    await prisma.booking.update({
+      where: {
+        id,
+        ownerId: session.user.id,
+        status: "PENDING",
+      },
+      data: {
+        status: "ACCEPTED",
+      },
+    });
+
+    return {
+      status: 200,
+      message: "Booking status changed to ACCEPTED",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Internal server error",
+    };
+  }
+};
+
+export const DeclineBooking = async (id: string) => {
+  const session = await auth();
+
+  if (!session || !session.user.id) {
+    throw new Error("unauthorized");
+  }
+
+  if (!id) {
+    throw new Error("id required");
+  }
+
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        ownerId: true,
+        status: true,
+      },
+    });
+
+    if (!booking) {
+      return {
+        status: 404,
+        message: "Booking not found",
+      };
+    }
+
+    if (booking.ownerId !== session.user.id || booking.status !== "PENDING") {
+      return {
+        status: 400,
+        message: "Unable to change status",
+      };
+    }
+    const updatedBooking = await prisma.booking.updateMany({
+      where: {
+        id,
+        ownerId: session.user.id,
+        status: "PENDING",
+      },
+      data: {
+        status: "DECLINED",
+      },
+    });
+    console.log(updatedBooking);
+    return {
+      status: 200,
+      message: "Booking status changed to CANCELLED",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Internal server error",
+    };
+  }
+};
