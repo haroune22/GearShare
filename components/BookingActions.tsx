@@ -1,6 +1,6 @@
 "use client";
 
-import { BookingStatus } from "@/lib/generated/prisma/enums";
+import { BookingStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
 import { useRouter } from "next/navigation";
 import { AcceptBooking, DeclineBooking } from "@/action/booking";
 import {
@@ -59,7 +59,7 @@ const ActionButton = ({
     <button
       type="button"
       onClick={handleClick}
-      disabled={loading}
+      disabled={loading || !onClick}
       className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${styles[variant]}`}
     >
       {loading && (
@@ -73,6 +73,7 @@ const ActionButton = ({
 type BookingActionsProps = {
   bookingId: string;
   bookingStatus: BookingStatus;
+  paymentStatus: PaymentStatus | null;
   ownerId: string;
   renterId: string;
   currentUserId?: string;
@@ -82,6 +83,7 @@ type BookingActionsProps = {
 const BookingActions = ({
   bookingId,
   bookingStatus,
+  paymentStatus,
   ownerId,
   renterId,
   currentUserId,
@@ -92,6 +94,7 @@ const BookingActions = ({
   const isParticipant = isOwner || isRenter;
 
   const status = String(bookingStatus);
+  const isPaid = paymentStatus === PaymentStatus.COMPLETED;
 
   const isPending = status === "PENDING";
   const isAccepted = status === "ACCEPTED";
@@ -120,10 +123,8 @@ const BookingActions = ({
   const pickupDeadlinePassed =
     pickupDeadline !== null && passedDeadline === pickupDeadline;
 
-  // UI visibility only. Validate permissions and status again on the server.
   const canCancel = isOwner && (isPending || isAccepted);
-
-  const canMarkNoShow = isOwner && isAccepted && pickupDeadlinePassed;
+  const canMarkNoShow = isOwner && isAccepted && isPaid && pickupDeadlinePassed;
 
   const isTerminal = ["COMPLETED", "CANCELLED", "NO_SHOW", "DECLINED"].includes(
     status,
@@ -188,35 +189,81 @@ const BookingActions = ({
           />
         )}
 
-        {isAccepted && isRenter && (
+        {isAccepted && isRenter && !isPaid && (
           <>
             <InfoMessage
               icon={<CreditCard className="size-5" />}
               title="Your request was accepted"
-              description="Your booking has been accepted. Continue to the payment step when it's ready."
+              description="Your booking has been accepted. Complete payment to arrange pickup."
             />
 
-            <ActionButton>
+            <ActionButton
+              onClick={async () => {
+                const response = await fetch("/api/stripe/checkout", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ bookingId }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.url) {
+                  throw new Error(data.error ?? "Unable to start checkout");
+                }
+
+                window.location.href = data.url;
+
+                return {
+                  status: 200,
+                  message: "Redirecting to Stripe...",
+                };
+              }}
+            >
               <CreditCard className="size-4" />
               Pay for booking
             </ActionButton>
           </>
         )}
 
-        {isAccepted && isOwner && (
+        {isAccepted && isOwner && !isPaid && (
           <InfoMessage
             icon={<Clock className="size-5" />}
-            title="Request accepted"
-            description="Coordinate the pickup with the renter according to your booking arrangements."
+            title="Awaiting payment"
+            description="The renter must complete payment before you can confirm pickup."
           />
         )}
 
-        {isPickedUp && (
+        {isAccepted && isOwner && isPaid && (
+          <>
+            <InfoMessage
+              icon={<Check className="size-5" />}
+              title="Payment received"
+              description="When you physically hand the item to the renter, confirm the pickup below."
+            />
+
+            <ActionButton>
+              <PackageCheck className="size-4" />
+              Confirm pickup
+            </ActionButton>
+          </>
+        )}
+
+        {isAccepted && isRenter && isPaid && (
+          <InfoMessage
+            icon={<Clock className="size-5" />}
+            title="Paid — awaiting pickup"
+            description="Your payment is complete. The owner will confirm pickup when they hand over the item."
+          />
+        )}
+
+        {isPickedUp && isOwner && (
           <>
             <InfoMessage
               icon={<PackageCheck className="size-5" />}
               title="Item picked up"
-              description="The rental is underway. Confirm the return when the item has been handed back."
+              description="The rental is underway. Confirm the return after the renter hands the item back."
             />
 
             <ActionButton>
@@ -224,6 +271,14 @@ const BookingActions = ({
               Confirm return
             </ActionButton>
           </>
+        )}
+
+        {isPickedUp && isRenter && (
+          <InfoMessage
+            icon={<PackageCheck className="size-5" />}
+            title="Rental in progress"
+            description="The pickup is confirmed. Return the item at the agreed time."
+          />
         )}
 
         {isReturned && (

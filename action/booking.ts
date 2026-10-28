@@ -236,6 +236,7 @@ export const getBookingInfo = async (id: string) => {
           },
         },
         totalPrice: true,
+        payment: true,
         listing: {
           select: {
             category: true,

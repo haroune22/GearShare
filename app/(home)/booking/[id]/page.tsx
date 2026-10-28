@@ -39,12 +39,13 @@ const BookingIdPage = async ({
       <ListingDetails listing={data.booking.listing} />
       <BookingDetails bookingData={data.booking} />
       <BookingActions
+        bookingId={booking.id}
+        bookingStatus={booking.status}
+        paymentStatus={booking.payment?.status ?? null}
+        ownerId={booking.owner.id}
+        renterId={booking.renter.id}
         currentUserId={session.user.id}
-        bookingId={data.booking.id}
-        bookingStatus={data.booking.status}
-        ownerId={data.booking.owner.id}
-        renterId={data.booking.renter.id}
-        pickupAt={data.booking.pickupAt}
+        pickupAt={booking.pickupAt}
       />
     </main>
   );

@@ -154,6 +154,9 @@ model Payment {
   status        PaymentStatus
   paymentMethod String
 
+  stripeCheckoutSessionId String? @unique
+  stripePaymentIntentId   String? @unique
+
   booking   Booking @relation(fields: [bookingId], references: [id])
   bookingId String  @unique
 
