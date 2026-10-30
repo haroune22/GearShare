@@ -17,7 +17,7 @@ const Listings = async ({
         return (
           <Card
             key={listing.id}
-            className="group w-full overflow-hidden border-zinc-800 bg-zinc-900/70 py-0 transition-all duration-300 hover:-translate-y-1 hover:border-[#9852f2]/50 hover:shadow-lg hover:shadow-[#9852f2]/10"
+            className="group w-full flex flex-col justify-between overflow-hidden h-full border-zinc-800 bg-zinc-900/70 py-0 transition-all duration-300 hover:-translate-y-1 hover:border-[#9852f2]/50 hover:shadow-lg hover:shadow-[#9852f2]/10"
           >
             <Link href={`/listing/${listing.id}`}>
               <div className="relative flex h-52 items-center justify-center overflow-hidden bg-linear-to-br from-zinc-800 via-zinc-900 to-[#9852f2]/20">

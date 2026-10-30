@@ -2,7 +2,12 @@
 
 import { BookingStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
 import { useRouter } from "next/navigation";
-import { AcceptBooking, DeclineBooking } from "@/action/booking";
+import {
+  AcceptBooking,
+  ConfirmPickup,
+  DeclineBooking,
+  ReturnedBooking,
+} from "@/action/booking";
 import {
   Ban,
   Check,
@@ -60,7 +65,7 @@ const ActionButton = ({
       type="button"
       onClick={handleClick}
       disabled={loading || !onClick}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${styles[variant]}`}
+      className={`inline-flex min-h-11 items-center justify-center cursor-pointer gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${styles[variant]}`}
     >
       {loading && (
         <span className="size-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
@@ -243,7 +248,7 @@ const BookingActions = ({
               description="When you physically hand the item to the renter, confirm the pickup below."
             />
 
-            <ActionButton>
+            <ActionButton onClick={() => ConfirmPickup(bookingId)}>
               <PackageCheck className="size-4" />
               Confirm pickup
             </ActionButton>
@@ -266,7 +271,7 @@ const BookingActions = ({
               description="The rental is underway. Confirm the return after the renter hands the item back."
             />
 
-            <ActionButton>
+            <ActionButton onClick={() => ReturnedBooking(bookingId)}>
               <PackageCheck className="size-4" />
               Confirm return
             </ActionButton>

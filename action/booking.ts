@@ -389,3 +389,140 @@ export const DeclineBooking = async (id: string) => {
     };
   }
 };
+
+export const ConfirmPickup = async (id: string) => {
+  const session = await auth();
+
+  if (!session || !session.user.id) {
+    throw new Error("unauthorized");
+  }
+
+  if (!id) {
+    throw new Error("id required");
+  }
+
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        ownerId: true,
+        status: true,
+        payment: {
+          select: {
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return {
+        status: 404,
+        message: "Booking not found",
+      };
+    }
+
+    if (
+      booking.ownerId !== session.user.id ||
+      booking.status !== "ACCEPTED" ||
+      booking.payment?.status !== "COMPLETED"
+    ) {
+      return {
+        status: 400,
+        message: "Unable to change status",
+      };
+    }
+    const updatedBooking = await prisma.booking.updateMany({
+      where: {
+        id,
+        ownerId: session.user.id,
+        status: "ACCEPTED",
+      },
+      data: {
+        status: "PICKED_UP",
+        pickedUpAt: new Date(),
+      },
+    });
+    console.log(updatedBooking);
+    return {
+      status: 200,
+      message: "Booking status changed to PICKED_UP",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Internal server error",
+    };
+  }
+};
+export const ReturnedBooking = async (id: string) => {
+  const session = await auth();
+
+  if (!session || !session.user.id) {
+    throw new Error("unauthorized");
+  }
+
+  if (!id) {
+    throw new Error("id required");
+  }
+
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        ownerId: true,
+        status: true,
+        payment: {
+          select: {
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return {
+        status: 404,
+        message: "Booking not found",
+      };
+    }
+
+    if (
+      booking.ownerId !== session.user.id ||
+      booking.status !== "PICKED_UP" ||
+      booking.payment?.status !== "COMPLETED"
+    ) {
+      return {
+        status: 400,
+        message: "Unable to change status",
+      };
+    }
+    const updatedBooking = await prisma.booking.updateMany({
+      where: {
+        id,
+        ownerId: session.user.id,
+        status: "PICKED_UP",
+      },
+      data: {
+        status: "RETURNED",
+        returnedAt: new Date(),
+      },
+    });
+    console.log(updatedBooking);
+    return {
+      status: 200,
+      message: "Booking status changed to RETURNED",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Internal server error",
+    };
+  }
+};
