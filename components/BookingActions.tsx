@@ -4,8 +4,10 @@ import { BookingStatus, PaymentStatus } from "@/lib/generated/prisma/enums";
 import { useRouter } from "next/navigation";
 import {
   AcceptBooking,
+  CancelBooking,
   ConfirmPickup,
   DeclineBooking,
+  NoShowBooking,
   ReturnedBooking,
 } from "@/action/booking";
 import {
@@ -128,7 +130,7 @@ const BookingActions = ({
   const pickupDeadlinePassed =
     pickupDeadline !== null && passedDeadline === pickupDeadline;
 
-  const canCancel = isOwner && (isPending || isAccepted);
+  const canCancel = isOwner && (isPending || isAccepted) && !isPaid;
   const canMarkNoShow = isOwner && isAccepted && isPaid && pickupDeadlinePassed;
 
   const isTerminal = ["COMPLETED", "CANCELLED", "NO_SHOW", "DECLINED"].includes(
@@ -330,7 +332,10 @@ const BookingActions = ({
 
             {canMarkNoShow && (
               <div className="space-y-2">
-                <ActionButton variant="danger">
+                <ActionButton
+                  variant="danger"
+                  onClick={() => NoShowBooking(bookingId)}
+                >
                   <ShieldAlert className="size-4" />
                   Mark renter as no-show
                 </ActionButton>
@@ -343,7 +348,10 @@ const BookingActions = ({
             )}
 
             {canCancel && (
-              <ActionButton variant="danger">
+              <ActionButton
+                variant="danger"
+                onClick={() => CancelBooking(bookingId)}
+              >
                 <Ban className="size-4" />
                 Cancel booking
               </ActionButton>

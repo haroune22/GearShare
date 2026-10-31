@@ -526,3 +526,170 @@ export const ReturnedBooking = async (id: string) => {
     };
   }
 };
+
+export const CancelBooking = async (id: string) => {
+  const session = await auth();
+
+  if (!session || !session.user.id) {
+    throw new Error("unauthorized");
+  }
+
+  if (!id) {
+    throw new Error("id required");
+  }
+
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        ownerId: true,
+        renterId: true,
+        payment: {
+          select: {
+            status: true,
+          },
+        },
+        status: true,
+      },
+    });
+
+    if (!booking) {
+      return {
+        status: 404,
+        message: "Booking not found",
+      };
+    }
+
+    const canCancelStatus =
+      booking.status === "PENDING" || booking.status === "ACCEPTED";
+
+    const canCancelPayment =
+      !booking.payment || booking.payment.status === "PENDING";
+
+    if (
+      booking.ownerId !== session.user.id &&
+      booking.renterId !== session.user.id
+    ) {
+      return {
+        status: 400,
+        message: "Unable to change status",
+      };
+    }
+
+    if (!canCancelStatus || !canCancelPayment) {
+      return {
+        status: 400,
+        message: "Can not Cancel",
+      };
+    }
+
+    await prisma.booking.updateMany({
+      where: {
+        id,
+        OR: [{ renterId: session.user.id }, { ownerId: session.user.id }],
+        status: "ACCEPTED",
+      },
+      data: {
+        status: "CANCELLED",
+      },
+    });
+
+    return {
+      status: 200,
+      message: "Booking status changed to CANCELLED",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Internal server error",
+    };
+  }
+};
+export const NoShowBooking = async (id: string) => {
+  const session = await auth();
+
+  if (!session || !session.user.id) {
+    throw new Error("unauthorized");
+  }
+
+  if (!id) {
+    throw new Error("id required");
+  }
+
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        ownerId: true,
+        renterId: true,
+        pickupAt: true,
+        payment: {
+          select: {
+            status: true,
+          },
+        },
+        status: true,
+      },
+    });
+
+    if (!booking) {
+      return {
+        status: 404,
+        message: "Booking not found",
+      };
+    }
+
+    if (booking.ownerId !== session.user.id) {
+      return {
+        status: 400,
+        message: "Unable to change status",
+      };
+    }
+
+    if (
+      booking.status !== "ACCEPTED" ||
+      booking.payment?.status !== "COMPLETED"
+    ) {
+      return {
+        status: 400,
+        message: "Can not Cancel",
+      };
+    }
+
+    const timeUntilPickup = booking.pickupAt.getTime() - Date.now();
+
+    if (timeUntilPickup < 30 * 60 * 1000) {
+      return {
+        status: 400,
+        message: "There is still time",
+      };
+    }
+
+    await prisma.booking.updateMany({
+      where: {
+        id,
+        ownerId: session.user.id,
+        status: "ACCEPTED",
+      },
+      data: {
+        status: "NO_SHOW",
+      },
+    });
+
+    return {
+      status: 200,
+      message: "Booking status changed to NO_SHOW",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      message: "Internal server error",
+    };
+  }
+};
