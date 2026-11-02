@@ -129,8 +129,8 @@ export const StatusProgress = ({ bookingStatus }: StatusProgressProps) => {
         value={progress}
         className={`mb-6 h-2 overflow-hidden rounded-full bg-zinc-800 ${
           isReturned
-            ? "[&_[data-slot=progress-indicator]]:bg-emerald-400"
-            : "[&_[data-slot=progress-indicator]]:bg-fuchsia-500"
+            ? "**:data-[slot=progress-indicator]:bg-emerald-400"
+            : "**:data-[slot=progress-indicator]:bg-fuchsia-500"
         }`}
       />
 

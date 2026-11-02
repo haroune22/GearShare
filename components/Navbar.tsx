@@ -29,13 +29,15 @@ const Navbar = async () => {
       </div>
       <div className="flex items-center gap-4">
         {session?.user && (
-          <Avatar>
-            <AvatarImage src={session?.user?.image || ""} alt="avatar" />
-            <AvatarFallback>
-              {session?.user.name?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-            <AvatarBadge className="bg-green-600 dark:bg-green-800" />
-          </Avatar>
+          <Link href={`/profile/${session.user.id}`}>
+            <Avatar>
+              <AvatarImage src={session?.user?.image || ""} alt="avatar" />
+              <AvatarFallback>
+                {session?.user.name?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+              <AvatarBadge className="bg-green-600 dark:bg-green-800" />
+            </Avatar>
+          </Link>
         )}
         {session?.user ? (
           <Button

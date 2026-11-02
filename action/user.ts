@@ -1,7 +1,8 @@
 "use server";
 
-import { signIn } from "@/auth";
+import { auth, signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { ProfileFormData, ProfileUser } from "@/lib/types";
 import { signInSchema } from "@/lib/zod";
 import { hash } from "bcryptjs";
 import { AuthError } from "next-auth";
@@ -63,3 +64,76 @@ const register = async (formData: FormData) => {
 };
 
 export { register, login };
+
+export const getUser = async (userId: string): Promise<ProfileUser | null> => {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  const isOwner = session.user.id === userId;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      userName: true,
+      image: true,
+      createdAt: true,
+
+      ...(isOwner && {
+        email: true,
+        phoneNumber: true,
+        age: true,
+        address: true,
+      }),
+
+      listings: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          images: true,
+          price: true,
+          type: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  if (!user) return null;
+
+  return {
+    ...user,
+    createdAt: user.createdAt.toISOString(),
+    listings: user.listings.map((listing) => ({
+      ...listing,
+      price: listing.price.toString(),
+    })),
+  };
+};
+
+export const updateUser = async (id: string, data: ProfileFormData) => {
+  try {
+    return {
+      status: 200,
+      success: true,
+      message: "Listing deleted successfully",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+    };
+  }
+};

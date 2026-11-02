@@ -77,3 +77,50 @@ export type BookingCardData = Omit<
   totalPrice: number;
   otherUser: BookingWithRelations["owner"];
 };
+
+export type ProfileListing = {
+  id: string;
+  name: string;
+  description: string | null;
+  images: string[];
+  price: string;
+  type: string;
+  status: string;
+};
+
+export type ProfileUser = {
+  id: string;
+  name: string | null;
+  userName: string | null;
+  image: string | null;
+  createdAt: string;
+
+  // Only returned for the profile owner
+  email?: string;
+  phoneNumber?: string | null;
+  age?: number | null;
+  address?: string | null;
+
+  listings: ProfileListing[];
+};
+
+export type ProfileFormData = {
+  name: string;
+  userName: string;
+  email: string;
+  phoneNumber: string;
+  age: number | null;
+  address: string;
+};
+
+export type ProfileReview = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  reviewer: {
+    name: string | null;
+    userName: string;
+    image: string | null;
+  };
+};
