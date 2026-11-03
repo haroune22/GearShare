@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Box, Download, ListChecks, SquareKanban } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { auth } from "@/auth";
 
 const navigation = [
   {
@@ -29,11 +30,10 @@ const navigation = [
     href: "/booking?view=request",
     icon: ListChecks,
     view: "request",
-    count: 2,
   },
 ];
 
-const BookingSideBar = () => {
+const BookingSideBar = ({ userId }: { userId: string }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentView = searchParams.get("view") ?? "all";
@@ -54,15 +54,20 @@ const BookingSideBar = () => {
           aria-label="Dashboard navigation"
           className="flex flex-col gap-1.5"
         >
-          {navigation.map(({ label, href, icon: Icon, view, count }) => {
+          {navigation.map(({ label, href, icon: Icon, view }) => {
             const isActive = view
               ? pathname === "/booking" && currentView === view
-              : pathname === "/listing" || pathname.startsWith("/listing/");
+              : pathname === "/browse";
+
+            const linkHref =
+              label === "My Listings" && userId
+                ? `/browse?userId=${encodeURIComponent(userId)}`
+                : href;
 
             return (
               <Link
                 key={label}
-                href={href}
+                href={linkHref}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 ${
                   isActive
@@ -72,11 +77,6 @@ const BookingSideBar = () => {
               >
                 <Icon className="size-4.5 shrink-0" />
                 <span>{label}</span>
-                {count !== undefined && (
-                  <span className="ml-auto inline-flex min-w-6 items-center justify-center rounded-md bg-fuchsia-500/15 px-1.5 py-1 text-xs font-semibold text-fuchsia-300">
-                    {count}
-                  </span>
-                )}
               </Link>
             );
           })}

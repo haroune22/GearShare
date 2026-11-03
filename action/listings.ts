@@ -7,10 +7,12 @@ import { createListingData } from "@/lib/types";
 export const getListings = async ({
   categorySlug,
   name,
+  userId,
   take = 10,
   skip = 0,
 }: {
   categorySlug?: string;
+  userId?: string;
   name?: string;
   take?: number;
   skip?: number;
@@ -19,6 +21,7 @@ export const getListings = async ({
     const listings = await prisma.listing.findMany({
       where: {
         ...(name && { name: { contains: name } }),
+        ...(userId && { userId: userId }),
         ...(categorySlug && {
           category: {
             slug: categorySlug,

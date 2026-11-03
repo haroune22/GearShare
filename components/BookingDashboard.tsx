@@ -10,20 +10,24 @@ import { Button } from "./ui/button";
 type BookingDashboardProps = {
   bookings: BookingCardData[];
   view: string;
+  userId: string;
 };
 
 const statusFilters = [
   "ALL",
   "PENDING",
   "ACCEPTED",
-  "ACTIVE",
   "RETURNED",
   "PICKED_UP",
   "CANCELLED",
   "NO_SHOW",
 ];
 
-const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
+const BookingDashboard = ({
+  bookings,
+  view,
+  userId,
+}: BookingDashboardProps) => {
   const [selectedStatus, setSelectedStatus] = useState("ALL");
 
   const headings: Record<string, { title: string; description: string }> = {
@@ -46,13 +50,13 @@ const BookingDashboard = ({ bookings, view }: BookingDashboardProps) => {
   const filteredData = bookings.filter(
     (b) => selectedStatus === "ALL" || b.status === selectedStatus,
   );
-  console.log(bookings.map((b) => b.status));
+
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:gap-8 lg:px-8 lg:py-8">
         <aside className="w-full shrink-0 lg:w-64">
           <div className="lg:sticky lg:top-8">
-            <BookingSideBar />
+            <BookingSideBar userId={userId} />
           </div>
         </aside>
 

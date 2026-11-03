@@ -6,11 +6,16 @@ import ListingsPagination from "@/components/ListingsPagination";
 import { ListCheck } from "lucide-react";
 import Link from "next/link";
 
-type SearchParams = Promise<{ category: string; name: string; page: number }>;
+type SearchParams = Promise<{
+  category: string;
+  name: string;
+  page: number;
+  userId: string;
+}>;
 
 const Browse = async ({ searchParams }: { searchParams: SearchParams }) => {
-  const { name, category, page } = await searchParams;
-  const listings = await getListings({ categorySlug: category, name });
+  const { name, category, page, userId } = await searchParams;
+  const listings = await getListings({ categorySlug: category, name, userId });
   const categories = await getCategory();
 
   return (

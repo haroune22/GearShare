@@ -15,7 +15,7 @@ const BookingPage = async ({
 }) => {
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session?.user || !session.user.id) {
     redirect("/login");
   }
 
@@ -55,7 +55,11 @@ const BookingPage = async ({
         </header>
 
         {convertedData?.length ? (
-          <BookingDashboard bookings={convertedData} view={view} />
+          <BookingDashboard
+            userId={session.user.id}
+            bookings={convertedData}
+            view={view}
+          />
         ) : (
           <section className="rounded-2xl border border-white/10 bg-white/3 px-6 py-16 text-center">
             <h2 className="text-xl font-semibold">No bookings yet</h2>
