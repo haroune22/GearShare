@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname, useSearchParams } from "next/navigation";
+
 import {
   Pagination,
   PaginationContent,
@@ -11,76 +13,96 @@ import {
 } from "./ui/pagination";
 
 type ListingsPaginationProps = {
-  listingsLength: number;
+  totalPages: number;
   currentPage: number;
 };
 
 const ListingsPagination = ({
-  listingsLength,
+  totalPages,
   currentPage,
 }: ListingsPaginationProps) => {
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(listingsLength / itemsPerPage);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  if (totalPages <= 1) {
-    return null;
-  }
+  if (totalPages <= 1) return null;
 
+  // Preserve existing filters and change only the page.
   const createPageUrl = (page: number) => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchParams.toString());
 
-    params.set("page", page.toString());
+    params.set("page", String(page));
 
-    return `/browse?${params.toString()}`;
+    return `${pathname}?${params.toString()}`;
+  };
+
+  const hasPrev = currentPage > 1;
+  const hasNext = currentPage < totalPages;
+
+  // Display a maximum of 7 page entries, including ellipses.
+  const getVisiblePages = (): (number | "ellipsis")[] => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const pages: (number | "ellipsis")[] = [1];
+
+    if (currentPage > 3) {
+      pages.push("ellipsis");
+    }
+
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let page = start; page <= end; page++) {
+      pages.push(page);
+    }
+
+    if (currentPage < totalPages - 2) {
+      pages.push("ellipsis");
+    }
+
+    pages.push(totalPages);
+
+    return pages;
   };
 
   return (
     <div className="mt-12 flex justify-center">
       <Pagination>
         <PaginationContent className="gap-1">
-          <PaginationItem>
-            <PaginationPrevious
-              href={
-                currentPage > 1 ? createPageUrl(currentPage - 1) : undefined
-              }
-              className={
-                currentPage === 1 ? "pointer-events-none opacity-40" : ""
-              }
-            />
-          </PaginationItem>
+          {hasPrev && (
+            <PaginationItem>
+              <PaginationPrevious
+                href={createPageUrl(currentPage - 1)}
+                className="transition-colors  hover:bg-fuchsia-500/10 hover:text-fuchsia-400"
+              />
+            </PaginationItem>
+          )}
 
-          {Array.from({ length: totalPages }, (_, index) => {
-            const page = index + 1;
-
-            return (
-              <PaginationItem key={page}>
+          {getVisiblePages().map((page, index) => (
+            <PaginationItem key={`${page}-${index}`}>
+              {page === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
                 <PaginationLink
                   href={createPageUrl(page)}
                   isActive={page === currentPage}
-                  className="h-9 w-9"
+                  className="h-9 w-9 transition-colors hover:border-fuchsia-500 text-fuchsia-400"
                 >
                   {page}
                 </PaginationLink>
-              </PaginationItem>
-            );
-          })}
-          <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href={
-                currentPage < totalPages
-                  ? createPageUrl(currentPage + 1)
-                  : undefined
-              }
-              className={
-                currentPage === totalPages
-                  ? "pointer-events-none opacity-40"
-                  : ""
-              }
-            />
-          </PaginationItem>
+              )}
+            </PaginationItem>
+          ))}
+
+          {hasNext && (
+            <PaginationItem>
+              <PaginationNext
+                href={createPageUrl(currentPage + 1)}
+                className="transition-colors hover:bg-fuchsia-500/10 hover:text-fuchsia-400"
+              />
+            </PaginationItem>
+          )}
         </PaginationContent>
       </Pagination>
     </div>

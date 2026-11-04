@@ -5,7 +5,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Box, Download, ListChecks, SquareKanban } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { auth } from "@/auth";
 
 const navigation = [
   {

@@ -6,24 +6,32 @@ import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { MobileNavSidebar } from "./MobileNavSidebar";
 
 const Navbar = async () => {
   const session = await auth();
 
   return (
     <div className="w-full flex items-center px-8 justify-between h-20 border-b border-fuchsia-300/30 ">
-      <Link
-        href={"/"}
-        className="transition-transform cursor-pointer duration-300 hover:scale-110"
-      >
-        <Image
-          src="/logo.png"
-          alt="logo"
-          className="rounded-lg object-cover"
-          width={230}
-          height={150}
-        />
-      </Link>
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <div className="md:hidden">
+          <MobileNavSidebar />
+        </div>
+
+        <Link
+          href="/"
+          className="shrink-0 hidden lg:flex cursor-pointer transition-transform duration-300 hover:scale-105"
+        >
+          <Image
+            src="/logo.png"
+            alt="GearShare logo"
+            width={230}
+            height={150}
+            priority
+            className="h-auto w-35 rounded-lg object-cover sm:w-45 md:w-57.5"
+          />
+        </Link>
+      </div>
       <div className="hidden md:flex items-center justify-center gap-6">
         <NavLinks className="flex items-center justify-center gap-6" />
       </div>

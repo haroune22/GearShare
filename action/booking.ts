@@ -144,6 +144,9 @@ export const getBookings = async (view: string) => {
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     if (bookings.length === 0) {

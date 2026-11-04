@@ -141,7 +141,10 @@ export default async function Listing({
 
       <section className="mt-16 border-t border-zinc-800 pt-10">
         <h2 className="mb-6 text-xl font-semibold">Listed by</h2>
-        <div className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <Link
+          href={`/profile/${listing.createdBy.id}`}
+          className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5"
+        >
           <div className="flex items-center gap-4">
             {listing.createdBy.image ? (
               <Image
@@ -170,7 +173,7 @@ export default async function Listing({
             </div>
           </div>
           <ShieldCheck size={22} className="text-emerald-400" />
-        </div>
+        </Link>
       </section>
 
       <section className="mt-12 border-t border-zinc-800 pt-10 pb-20">

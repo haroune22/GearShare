@@ -1,5 +1,6 @@
 import { Package } from "lucide-react";
 import type { ProfileListing } from "../lib/types";
+import Link from "next/link";
 
 type Props = {
   listings: ProfileListing[];
@@ -43,7 +44,8 @@ export function ProfileListings({ listings, isOwner }: Props) {
             const isBorrow = listing.type.toLowerCase() === "borrow";
 
             return (
-              <article
+              <Link
+                href={`/listing/${listing.id}`}
                 key={listing.id}
                 className="group overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 transition hover:border-fuchsia-500/40"
               >
@@ -83,7 +85,7 @@ export function ProfileListings({ listings, isOwner }: Props) {
                     </p>
                   </div>
                 </div>
-              </article>
+              </Link>
             );
           })}
         </div>

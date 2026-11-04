@@ -8,6 +8,7 @@ import {
   UserRound,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 type BookingDetailsProps = {
   bookingData: {
@@ -217,14 +218,17 @@ const BookingDetails = ({ bookingData }: BookingDetailsProps) => {
               role: "Item owner",
               person: owner,
               displayName: ownerName,
+              id: owner.id,
             },
             {
               role: "Renter",
               person: renter,
               displayName: renterName,
+              id: renter.id,
             },
-          ].map(({ role, person, displayName }) => (
-            <div
+          ].map(({ role, person, displayName, id }) => (
+            <Link
+              href={`/profile/${id}`}
               key={role}
               className="flex min-w-0 items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-4"
             >
@@ -255,7 +259,7 @@ const BookingDetails = ({ bookingData }: BookingDetailsProps) => {
                   </p>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

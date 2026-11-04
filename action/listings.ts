@@ -3,6 +3,31 @@ import { auth } from "@/auth";
 import { ListingStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createListingData } from "@/lib/types";
+type ListingFilters = {
+  categorySlug?: string;
+  name?: string;
+  userId?: string;
+};
+
+const buildListingsWhere = ({
+  categorySlug,
+  name,
+  userId,
+}: ListingFilters) => ({
+  ...(name && {
+    name: {
+      contains: name,
+    },
+  }),
+  ...(userId && {
+    userId,
+  }),
+  ...(categorySlug && {
+    category: {
+      slug: categorySlug,
+    },
+  }),
+});
 
 export const getListings = async ({
   categorySlug,
@@ -10,24 +35,17 @@ export const getListings = async ({
   userId,
   take = 10,
   skip = 0,
-}: {
-  categorySlug?: string;
-  userId?: string;
-  name?: string;
+}: ListingFilters & {
   take?: number;
   skip?: number;
 }) => {
   try {
     const listings = await prisma.listing.findMany({
-      where: {
-        ...(name && { name: { contains: name } }),
-        ...(userId && { userId: userId }),
-        ...(categorySlug && {
-          category: {
-            slug: categorySlug,
-          },
-        }),
-      },
+      where: buildListingsWhere({
+        categorySlug,
+        name,
+        userId,
+      }),
       include: {
         createdBy: {
           select: {
@@ -44,12 +62,33 @@ export const getListings = async ({
       take,
       skip,
     });
+
     return listings;
   } catch (error) {
-    console.log(error);
+    console.error("Failed to fetch listings:", error);
+    throw new Error("Failed to fetch listings");
   }
 };
+export const getListingsCount = async ({
+  categorySlug,
+  name,
+  userId,
+}: ListingFilters) => {
+  try {
+    const totalCount = await prisma.listing.count({
+      where: buildListingsWhere({
+        categorySlug,
+        name,
+        userId,
+      }),
+    });
 
+    return totalCount;
+  } catch (error) {
+    console.error("Failed to count listings:", error);
+    throw new Error("Failed to count listings");
+  }
+};
 export const getListingById = async (id: string) => {
   try {
     const listing = await prisma.listing.findUnique({
