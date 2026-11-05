@@ -3,92 +3,103 @@ import { auth } from "@/auth";
 import { ListingStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createListingData } from "@/lib/types";
+
 type ListingFilters = {
   categorySlug?: string;
   name?: string;
   userId?: string;
-};
-
-const buildListingsWhere = ({
-  categorySlug,
-  name,
-  userId,
-}: ListingFilters) => ({
-  ...(name && {
-    name: {
-      contains: name,
-    },
-  }),
-  ...(userId && {
-    userId,
-  }),
-  ...(categorySlug && {
-    category: {
-      slug: categorySlug,
-    },
-  }),
-});
-
-export const getListings = async ({
-  categorySlug,
-  name,
-  userId,
-  take = 10,
-  skip = 0,
-}: ListingFilters & {
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
   take?: number;
   skip?: number;
-}) => {
-  try {
-    const listings = await prisma.listing.findMany({
-      where: buildListingsWhere({
-        categorySlug,
-        name,
-        userId,
-      }),
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            userName: true,
-            name: true,
-            image: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take,
-      skip,
-    });
-
-    return listings;
-  } catch (error) {
-    console.error("Failed to fetch listings:", error);
-    throw new Error("Failed to fetch listings");
-  }
 };
-export const getListingsCount = async ({
+
+const getDistanceInKm = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+) => {
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+  const earthRadiusKm = 6371;
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) ** 2;
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+const getFilteredListings = async ({
   categorySlug,
   name,
   userId,
+  latitude,
+  longitude,
+  radiusKm = 10,
 }: ListingFilters) => {
-  try {
-    const totalCount = await prisma.listing.count({
-      where: buildListingsWhere({
-        categorySlug,
-        name,
-        userId,
+  const listings = await prisma.listing.findMany({
+    where: {
+      ...(name && { name: { contains: name, mode: "insensitive" } }),
+      ...(userId && { userId }),
+      ...(categorySlug && {
+        category: { slug: categorySlug },
       }),
-    });
+    },
+    include: {
+      location: true,
+      createdBy: {
+        select: {
+          id: true,
+          userName: true,
+          name: true,
+          image: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-    return totalCount;
-  } catch (error) {
-    console.error("Failed to count listings:", error);
-    throw new Error("Failed to count listings");
+  if (latitude == null || longitude == null) {
+    return listings;
   }
+
+  return listings.filter((listing) => {
+    const listingLat = Number(listing?.location?.latitude);
+    const listingLon = Number(listing?.location?.longitude);
+
+    const distance = getDistanceInKm(
+      latitude,
+      longitude,
+      listingLat,
+      listingLon,
+    );
+
+    return distance <= radiusKm;
+  });
 };
+
+export const getListings = async (filters: ListingFilters) => {
+  const listings = await getFilteredListings(filters);
+
+  const { take = 10, skip = 0 } = filters;
+
+  return listings.slice(skip, skip + take);
+};
+
+export const getListingsCount = async (filters: ListingFilters) => {
+  const listings = await getFilteredListings(filters);
+
+  return listings.length;
+};
+
 export const getListingById = async (id: string) => {
   try {
     const listing = await prisma.listing.findUnique({
