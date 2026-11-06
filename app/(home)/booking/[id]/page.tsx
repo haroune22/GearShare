@@ -1,9 +1,10 @@
 import { getBookingInfo } from "@/action/booking";
 import { auth } from "@/auth";
+import BookingActions from "@/components/BookingActions";
 import BookingDetails from "@/components/BookingDetails";
 import { ListingDetails } from "@/components/ListingDetails";
 import { StatusProgress } from "@/components/StatusProgress";
-import BookingActions from "@/components/BookingActions";
+
 import { ChevronRightCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 
