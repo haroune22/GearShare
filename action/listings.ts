@@ -299,13 +299,13 @@ export const updateListing = async (
 };
 
 export const deleteListing = async (listingId: string) => {
-  if (!listingId) {
-    throw new Error("Listing Id required");
-  }
   const session = await auth();
 
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
+  }
+  if (!listingId) {
+    throw new Error("Listing Id required");
   }
 
   try {
@@ -339,7 +339,43 @@ export const deleteListing = async (listingId: string) => {
 
     // Delete image files first from uploadThing
 
-    await prisma.listing.delete({
+    const activeBooking = await prisma.booking.findFirst({
+      where: {
+        listingId,
+        status: {
+          notIn: ["RETURNED", "CANCELLED", "NO_SHOW"],
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (activeBooking) {
+      return {
+        success: false,
+        message:
+          "This listing has an active booking and cannot be deleted. Resolve the booking first.",
+      };
+    }
+    const existingBooking = await prisma.booking.findFirst({
+      where: {
+        listingId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingBooking) {
+      return {
+        success: false,
+        message:
+          "This listing cannot be deleted because it has booking history. You can deactivate it instead.",
+      };
+    }
+
+    await prisma.listing.deleteMany({
       where: {
         id: listingId,
       },
@@ -350,6 +386,7 @@ export const deleteListing = async (listingId: string) => {
       message: "Listing deleted successfully",
     };
   } catch (error) {
+    console.log("delete listing failed", error);
     return {
       success: false,
       error,
